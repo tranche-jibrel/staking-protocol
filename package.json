@@ -1,0 +1,30 @@
+{
+  "name": "staking-protocol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "compile": "npx truffle compile --all",
+    "test": "mocha --exit --recursive --timeout 20000"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.0",
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@truffle/hdwallet-provider": "^1.2.2",
+    "dotenv": "^8.2.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tranche-jibrel/staking-protocol.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tranche-jibrel/staking-protocol/issues"
+  },
+  "homepage": "https://github.com/tranche-jibrel/staking-protocol#readme"
+}

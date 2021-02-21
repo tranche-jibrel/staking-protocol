@@ -1,0 +1,10 @@
+.gitmodules
+node_modules/*
+.env
+build/
+.openzeppelin/dev*.json
+.openzeppelin/unknown*.json
+unused/
+dist/*
+Flatters.bat
+package-lock.json
