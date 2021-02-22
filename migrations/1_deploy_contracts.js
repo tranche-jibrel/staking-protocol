@@ -13,16 +13,19 @@ module.exports = async (deployer, network, accounts) => {
       .then(console.log('Staking Contract Deployed: ', Staking.address));
       
   } else if (network == 'kovan') {
-    let { SLICEAddress } = process.env;
+    let { SLICEAddress, LPTokenAddress } = process.env;
     let SLICE = new web3.eth.Contract(abi, SLICEAddress)
+    let LPToken = new web3.eth.Contract(abi, LPTokenAddress)
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
     const toWei = web3.utils.toWei;
-    
-    let SCInstance = await deployer.deploy(Staking, 21022021, toWei('1'), SLICEAddress, { from: tokenOwner });
+
+    let SCInstance = await deployer.deploy(Staking, 1613982253, toWei('1'), SLICEAddress, { from: tokenOwner });
     SCInstance = await Staking.deployed();
     await SCInstance.addStakableToken(SLICEAddress, toWei('1'), { from: tokenOwner })
+    await SCInstance.addStakableToken(LPTokenAddress, toWei('1'), { from: tokenOwner })
     await SLICE.methods.transfer(Staking.address, toWei('1000')).send({ from: tokenOwner });
+    await LPToken.methods.transfer(Staking.address, toWei('1000')).send({ from: tokenOwner });
     console.log('STAKING_ADDRESS=' + Staking.address);
     console.log('REACT_APP_STAKING_ADDRESS=' + Staking.address);
   }
