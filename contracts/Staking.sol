@@ -13,9 +13,6 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
     // timestamp for the start of staking period
     uint256 public startTime;
 
-    // duration of total staking period
-    uint256 constant public STAKING_PERIOD = 365 days;
-
     // reward per block per token in SLICE
     mapping(address => uint256) public rewardPerBlock;
 
@@ -57,7 +54,6 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
     }
 
     modifier isValid() {
-        require(now <= startTime.add(STAKING_PERIOD), "Staking: Staking period has ended");
         require(rewardsDistributed < rewardCap, "Staking: Rewards have already been distributed :(");
         _;
     }
@@ -161,7 +157,7 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
         emit Withdraw(msg.sender, tokenAddress, amount, reward);
     }
 
-    function calculateRecentReward(address user, address tokenAddress) internal view returns (uint256 reward) {
+    function calculateRecentReward(address user, address tokenAddress) public view returns (uint256 reward) {
         reward = (rewardPerBlock[tokenAddress].mul(now.sub(lastActivity[user]))).mul(balances[user][tokenAddress].stakedAmount);
     }
 
