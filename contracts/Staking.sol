@@ -22,6 +22,9 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
     // Total amount of SLICE tokens distributed
     uint256 public rewardsDistributed;
 
+    // Minimum number of blocks after which the user can withdraw rewards
+    uint256 public withdrawBuffer;
+
     IERC20 public SLICE;
 
     struct UserBalances {
@@ -35,7 +38,7 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
     // for each token, we store the total pool size
     mapping(address => uint256) private poolSize;
 
-    // last block timestamp where the user withdrew/deposited tokens
+    // last block number where the user withdrew/deposited tokens
     mapping(address => uint256) private lastActivity;
 
     // returns true if token is whitelisted i.e it can be staked
@@ -47,26 +50,29 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
     event TokenRemovedFromWhitelist(address tokenAddress);
     event SLICEAddressUpdated(address tokenAddress);
     event RewardCapUpdated(uint256 newRewardCap);
+    event WithdrawBufferUpdated(uint256 newWithdrawBuffer);
 
     modifier isTokenWhitelisted(address _token) {
         require(isWhitelisted[_token], "Staking: Token not whitelisted");
         _;
     }
 
-    modifier isValid() {
+    modifier withinCap() {
         require(rewardsDistributed < rewardCap, "Staking: Rewards have already been distributed :(");
         _;
     }
 
-    constructor (uint256 _startTime, uint256 _rewardCap, address _SLICEAddress) public {
+    constructor (uint256 _startTime, uint256 _rewardCap, uint256 _withdrawBuffer, address _SLICEAddress) public {
         OwnableUpgradeSafe.__Ownable_init();
 
         startTime = _startTime;
         rewardCap = _rewardCap;
+        withdrawBuffer = _withdrawBuffer;
         SLICE = IERC20(_SLICEAddress);
 
         emit SLICEAddressUpdated(_SLICEAddress);
         emit RewardCapUpdated(_rewardCap);
+        emit WithdrawBufferUpdated(_withdrawBuffer);
     }
 
     function addStakableToken(address tokenAddress, uint256 _rewardPerBlock) external onlyOwner {
@@ -95,7 +101,15 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
         emit RewardCapUpdated(_rewardCap);
     }
 
-    function deposit(address tokenAddress, uint256 amount) external isTokenWhitelisted(tokenAddress) isValid() nonReentrant {
+    function updateWithdrawBuffer(uint256 _withdrawBuffer) external onlyOwner {
+        withdrawBuffer = _withdrawBuffer;
+        
+        emit WithdrawBufferUpdated(_withdrawBuffer);
+    }
+
+    function deposit(address tokenAddress, uint256 amount) external isTokenWhitelisted(tokenAddress) withinCap() nonReentrant {
+        require(now >= startTime, "Staking: Staking period hasn't started yet!");
+
         require(amount > 0, "Staking: Amount must be > 0");
 
         uint256 allowance = IERC20(tokenAddress).allowance(msg.sender, address(this));
@@ -103,7 +117,7 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
 
         UserBalances storage userBalances = balances[msg.sender][tokenAddress];
 
-        uint256 recentReward = calculateRecentReward(msg.sender, tokenAddress);
+        uint256 recentReward = calculateRecentReward(tokenAddress);
 
         if (recentReward > 0) {
             if (rewardsDistributed.add(recentReward) <= rewardCap) {
@@ -117,7 +131,7 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
 
         userBalances.stakedAmount = (userBalances.stakedAmount).add(amount);
 
-        lastActivity[msg.sender] = now;
+        lastActivity[msg.sender] = block.number;
 
         // update the pool size
         poolSize[tokenAddress] = poolSize[tokenAddress].add(amount);
@@ -129,11 +143,13 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
 
 
     function withdraw(address tokenAddress, uint256 amount) external isTokenWhitelisted(tokenAddress) nonReentrant {
+        require((block.number).sub(lastActivity[msg.sender]) >= withdrawBuffer, "Staking: Withdraw buffer not met!");
+
         UserBalances storage userBalances = balances[msg.sender][tokenAddress];
 
         require(userBalances.stakedAmount >= amount, "Staking: balance too low");
 
-        uint256 recentReward = calculateRecentReward(msg.sender, tokenAddress);
+        uint256 recentReward = calculateRecentReward(tokenAddress);
         uint256 reward = recentReward.add(userBalances.accruedRewards);
 
         delete userBalances.accruedRewards;
@@ -143,10 +159,10 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
         } else {
             rewardsDistributed = rewardCap;
         }
-        
+
         userBalances.stakedAmount = userBalances.stakedAmount.sub(amount);
 
-        lastActivity[msg.sender] = now;
+        lastActivity[msg.sender] = block.number;
 
         // update the pool size
         poolSize[tokenAddress] = poolSize[tokenAddress].sub(amount);
@@ -157,13 +173,13 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
         emit Withdraw(msg.sender, tokenAddress, amount, reward);
     }
 
-    function calculateRecentReward(address user, address tokenAddress) public view returns (uint256 reward) {
-        reward = (rewardPerBlock[tokenAddress].mul(now.sub(lastActivity[user]))).mul(balances[user][tokenAddress].stakedAmount);
+    function calculateRecentReward(address tokenAddress) private view returns (uint256 reward) {
+        reward = ((rewardPerBlock[tokenAddress].mul((block.number).sub(lastActivity[msg.sender]))).mul(balances[msg.sender][tokenAddress].stakedAmount)).div(10**18);
     }
 
     function getTotalReward(address tokenAddress) public view returns (uint256 reward) {
         uint256 accruedRewards = balances[msg.sender][tokenAddress].accruedRewards;
-        reward = accruedRewards.add(calculateRecentReward(msg.sender, tokenAddress));
+        reward = accruedRewards.add(calculateRecentReward(tokenAddress));
     }
 
     /*
