@@ -33,7 +33,11 @@ describe("Staking", function () {
       from: owner
     });
 
-    this.staking = await Staking.new(
+    this.staking = await Staking.new({
+      from: owner  
+    });
+
+    await this.staking.initialize(
       startTime,
       rewardCap,
       5,

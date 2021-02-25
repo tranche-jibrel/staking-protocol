@@ -62,7 +62,7 @@ contract Staking is ReentrancyGuard, OwnableUpgradeSafe {
         _;
     }
 
-    constructor (uint256 _startTime, uint256 _rewardCap, uint256 _withdrawBuffer, address _SLICEAddress) public {
+    function initialize(uint256 _startTime, uint256 _rewardCap, uint256 _withdrawBuffer, address _SLICEAddress) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
 
         startTime = _startTime;

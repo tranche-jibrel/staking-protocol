@@ -11,7 +11,7 @@ contract MyERC20 is OwnableUpgradeSafe, ERC20UpgradeSafe {
     function initialize(uint256 _initialSupply, string memory name, string memory symbol) public initializer {
         OwnableUpgradeSafe.__Ownable_init();
         ERC20UpgradeSafe.__ERC20_init_unchained(name, symbol);
-        _mint(address(0), _initialSupply.mul(10 ** 18));
+        _mint(msg.sender, _initialSupply.mul(10 ** 18));
     }
 
 }
