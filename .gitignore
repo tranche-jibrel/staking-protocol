@@ -8,3 +8,4 @@ unused/
 dist/*
 Flatters.bat
 package-lock.json
+flatten/*
