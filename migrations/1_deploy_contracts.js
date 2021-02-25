@@ -20,12 +20,12 @@ module.exports = async (deployer, network, accounts) => {
     const tokenOwner = accounts[0];
     const toWei = web3.utils.toWei;
 
-    let SCInstance = await deployer.deploy(Staking, 1613982253, toWei('1'), SLICEAddress, { from: tokenOwner });
+    let SCInstance = await deployer.deploy(Staking, 1613982253, toWei('10000000000'), SLICEAddress, { from: tokenOwner });
     SCInstance = await Staking.deployed();
-    await SCInstance.addStakableToken(SLICEAddress, toWei('1'), { from: tokenOwner })
-    await SCInstance.addStakableToken(LPTokenAddress, toWei('1'), { from: tokenOwner })
-    await SLICE.methods.transfer(Staking.address, toWei('1000')).send({ from: tokenOwner });
-    await LPToken.methods.transfer(Staking.address, toWei('1000')).send({ from: tokenOwner });
+    await SCInstance.addStakableToken(SLICEAddress, 1000000000, { from: tokenOwner })
+    await SCInstance.addStakableToken(LPTokenAddress, 1000000000, { from: tokenOwner })
+    await SLICE.methods.transfer(Staking.address, toWei('10000')).send({ from: tokenOwner });
+    await LPToken.methods.transfer(Staking.address, toWei('10000')).send({ from: tokenOwner });
     console.log('STAKING_ADDRESS=' + Staking.address);
     console.log('REACT_APP_STAKING_ADDRESS=' + Staking.address);
   }
