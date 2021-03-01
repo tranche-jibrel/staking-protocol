@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./StakingStorage.sol";
 
 
-contract Staking is ReentrancyGuard, StakingStorage, IStaking {
+contract Staking is ReentrancyGuardUpgradeSafe, StakingStorage, IStaking {
     using SafeMath for uint256;
 
     /** 
