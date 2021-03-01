@@ -1,0 +1,170 @@
+{
+  "manifestVersion": "3.1",
+  "impls": {
+    "6f47260f867dfad0cd434303a78adb057709d09898addbab4e4c4439a0fa3821": {
+      "address": "0xe1e7a03c672D56F93d24165586670a9bF0A0Bd65",
+      "txHash": "0x8ea1a490cde02e79ac626f408c31fe7a13b5444b97ba637d8feb3af2ae7d4ce4",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:61"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeSafe",
+            "label": "_notEntered",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\ReentrancyGuard.sol:21"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\ReentrancyGuard.sol:63"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\GSN\\Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:78"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "startTime",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:10"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "rewardPerBlock",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:13"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "rewardCap",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:16"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "rewardsDistributed",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:19"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "withdrawBuffer",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:22"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "SLICE",
+            "type": "t_contract(IERC20)1807",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:24"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_struct(UserBalances)683_storage))",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:32"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "poolSize",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:35"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "lastActivity",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:38"
+          },
+          {
+            "contract": "StakingStorage",
+            "label": "isWhitelisted",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingStorage.sol:41"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(IERC20)1807": {
+            "label": "contract IERC20"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_struct(UserBalances)683_storage))": {
+            "label": "mapping(address => mapping(address => struct StakingStorage.UserBalances))"
+          },
+          "t_mapping(t_address,t_struct(UserBalances)683_storage)": {
+            "label": "mapping(address => struct StakingStorage.UserBalances)"
+          },
+          "t_struct(UserBalances)683_storage": {
+            "label": "struct StakingStorage.UserBalances",
+            "members": [
+              {
+                "label": "stakedAmount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "accruedRewards",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  },
+  "admin": {
+    "address": "0x572e032a7fFDD9164Fe68Be2D22b08284c655eD1",
+    "txHash": "0x9fc97d270a33b5dda7d8e3b0f35c0621a906eae9bdafdb93bdf75a9d3a3f4a4b"
+  }
+}
