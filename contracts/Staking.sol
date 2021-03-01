@@ -19,6 +19,7 @@ contract Staking is ReentrancyGuardUpgradeSafe, StakingStorage, IStaking {
      */
     function initialize(uint256 _startTime, uint256 _rewardCap, uint256 _withdrawBuffer, address _SLICEAddress) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
+        __ReentrancyGuard_init_unchained();
 
         startTime = _startTime;
         rewardCap = _rewardCap;
