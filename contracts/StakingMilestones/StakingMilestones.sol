@@ -5,9 +5,10 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "./IYieldFarm.sol";
 
-
-contract StakingMilestones is ReentrancyGuard {
+contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
     uint128 constant private BASE_MULTIPLIER = uint128(1 * 10 ** 18);
@@ -18,6 +19,9 @@ contract StakingMilestones is ReentrancyGuard {
 
     // duration of each epoch
     uint256 public epochDuration;
+
+    // Yield Farm contract
+    IYieldFarm public yieldFarm;
 
     // holds the current balance of the user for each token
     mapping(address => mapping(address => uint256)) private balances;
@@ -47,10 +51,18 @@ contract StakingMilestones is ReentrancyGuard {
     event Withdraw(address indexed user, address indexed tokenAddress, uint256 amount);
     event ManualEpochInit(address indexed caller, uint128 indexed epochId, address[] tokens);
     event EmergencyWithdraw(address indexed user, address indexed tokenAddress, uint256 amount);
+    event YieldFarmAddressUpdated(address indexed yieldFarmAddress);
 
-    constructor (uint256 _epoch1Start, uint256 _epochDuration) public {
+    function initialize (uint256 _epoch1Start, uint256 _epochDuration) public initializer {
+        OwnableUpgradeSafe.__Ownable_init();
         epoch1Start = _epoch1Start;
         epochDuration = _epochDuration;
+    }
+
+    function setYieldFarmAddress(address _yieldFarm) external onlyOwner  {
+        yieldFarm = IYieldFarm(_yieldFarm);
+
+        emit YieldFarmAddressUpdated(_yieldFarm);
     }
 
     /*
@@ -146,6 +158,7 @@ contract StakingMilestones is ReentrancyGuard {
 
     /*
      * Removes the deposit of the user and sends the amount of `tokenAddress` back to the `user`
+     * Withdraws all uncollected rewards upto the previous epoch by calling massHarvest() from YieldFarm
      */
     function withdraw(address tokenAddress, uint256 amount) public nonReentrant {
         require(balances[msg.sender][tokenAddress] >= amount, "Staking: balance too small");
@@ -226,6 +239,8 @@ contract StakingMilestones is ReentrancyGuard {
 
             checkpoints[last].startBalance = balances[msg.sender][tokenAddress];
         }
+
+        yieldFarm.massHarvest(msg.sender); // Will fail in epoch 0
 
         emit Withdraw(msg.sender, tokenAddress, amount);
     }

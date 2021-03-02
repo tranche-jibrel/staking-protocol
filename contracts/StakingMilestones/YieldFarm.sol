@@ -4,22 +4,15 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Pausable.sol";
 import "./IStakingMilestones.sol";
 
 
-contract YieldFarm is Ownable {
+contract YieldFarm is Pausable {
 
     // lib
     using SafeMath for uint;
     using SafeMath for uint128;
-
-    // constants
-    uint public constant NR_OF_EPOCHS = 25;
-
-     // state variables
-
-    uint public rewardCap;
 
     // addreses
     address private _vault;
@@ -32,10 +25,12 @@ contract YieldFarm is Ownable {
     uint128 public noOfStakableTokens;
     mapping (uint128 => address) public stakableToken;
 
-    // fixed size array holdings total number of epochs + 1 (epoch 0 doesn't count)
-    uint[] private epochs = new uint[](NR_OF_EPOCHS + 1);
-    // pre-computed variable for optimization. total amount of bond tokens to be distributed on each epoch
-    uint private _totalAmountPerEpoch;
+    // Store total pool size of each epoch
+    mapping (uint128 => uint) private epochs;
+    // Total amount of SLICE tokens to be distributed in that epoch
+    mapping (uint128 => uint) public totalRewardInEpoch;
+    // Total SLICE distributed since epochStart
+    uint public totalRewardsDistributed;
 
     // id of last init epoch, for optimization purposes moved from struct to a single id.
     uint128 public lastInitializedEpoch;
@@ -50,20 +45,22 @@ contract YieldFarm is Ownable {
     event Harvest(address indexed user, uint128 indexed epochId, uint256 amount);
     event StakableTokenAdded(address indexed newTokenAddress, uint256 weight);
     event StakableTokenRemoved(address indexed tokenAddress);
+    event TotalRewardInEpochUpdated(uint128 epochId, uint totalReward);
 
     // constructor
-    constructor(
+    function initialize(
         address sliceAddress,
         address stakeContract,
-        address vault
-        uint _rewardCap) public {
+        address vault,
+        uint _totalRewardInEpoch
+    ) public initializer {
+        Pausable.__Pausable_init();
         _slice = IERC20(sliceAddress);
-        rewardCap = _rewardCap;
+        totalRewardInEpoch[1] = _totalRewardInEpoch;
         _staking = IStakingMilestones(stakeContract);
         _vault = vault;
         epochStart = _staking.epoch1Start();
         epochDuration = _staking.epochDuration();
-        _totalAmountPerEpoch = rewardCap.mul(10**18).div(NR_OF_EPOCHS);
     }
 
     /** 
@@ -71,10 +68,10 @@ contract YieldFarm is Ownable {
      * @param _tokenAddress contract token address
      * @param _weight weight of the token in percent for calculating rewards
      */
-    function addStakableToken(address _tokenAddress, uint _weight) external onlyOwner {
+    function addStakableToken(address _tokenAddress, uint _weight) external whenNotPaused onlyOwner {
         require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
 
-        noOfStakableTokens = noOfStakableTokens.add(1);
+        noOfStakableTokens = noOfStakableTokens + 1;
         weightOfStakableToken[_tokenAddress] = _weight;
         stakableToken[noOfStakableTokens] = _tokenAddress;
         
@@ -85,7 +82,7 @@ contract YieldFarm is Ownable {
      * @dev remove a stakable token contract address, along with its weight
      * @param _tokenAddress contract token address
      */
-    function removeStakableToken(address _tokenAddress) external onlyOwner {
+    function removeStakableToken(address _tokenAddress) external whenNotPaused onlyOwner {
         require(weightOfStakableToken[_tokenAddress] > 0, "YieldFarm: Token is not added");
 
         delete weightOfStakableToken[_tokenAddress];
@@ -104,42 +101,47 @@ contract YieldFarm is Ownable {
             }
         }
 
-        noOfStakableTokens = noOfStakableTokens.sub(1);
+        noOfStakableTokens = noOfStakableTokens - 1;
         
         emit StakableTokenRemoved(_tokenAddress);
     }
 
+    function setTotalRewardInParticularEpoch(uint128 epochId, uint _totalRewardInEpoch) external whenNotPaused onlyOwner {
+        require(epochId > _getEpochId(), "YieldFarm: Epoch ID should be greater than the current epoch ID");
+        
+        totalRewardInEpoch[epochId] = _totalRewardInEpoch;
+        
+        emit TotalRewardInEpochUpdated(epochId, _totalRewardInEpoch);
+    }
+
     // public methods
     // public method to harvest all the unharvested epochs until current epoch - 1
-    function massHarvest() external returns (uint){
+    function massHarvest(address beneficiary) external whenNotPaused returns (uint){
+        require(msg.sender == beneficiary || msg.sender == address(_staking), "YieldFarm: Not eligible for the harvest");
+
         uint totalDistributedValue;
         uint epochId = _getEpochId().sub(1); // fails in epoch 0
-        // force max number of epochs
-        if (epochId > NR_OF_EPOCHS) {
-            epochId = NR_OF_EPOCHS;
-        }
 
-        for (uint128 i = lastEpochIdHarvested[msg.sender] + 1; i <= epochId; i++) {
+        for (uint128 i = lastEpochIdHarvested[beneficiary] + 1; i <= epochId; i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
-            totalDistributedValue += _harvest(i);
+            totalDistributedValue += _harvest(i, beneficiary);
         }
 
-        emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);
+        emit MassHarvest(beneficiary, epochId.sub(lastEpochIdHarvested[beneficiary]), totalDistributedValue);
 
         if (totalDistributedValue > 0) {
-            _slice.transferFrom(_vault, msg.sender, totalDistributedValue);
+            _slice.transferFrom(_vault, beneficiary, totalDistributedValue);
         }
 
         return totalDistributedValue;
     }
 
-    function harvest (uint128 epochId) external returns (uint){
+    function harvest (uint128 epochId) external whenNotPaused returns (uint){
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
-        require(epochId <= NR_OF_EPOCHS, "Maximum number of epochs is 25");
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
-        uint userReward = _harvest(epochId);
+        uint userReward = _harvest(epochId, msg.sender);
         if (userReward > 0) {
             _slice.transferFrom(_vault, msg.sender, userReward);
         }
@@ -171,18 +173,22 @@ contract YieldFarm is Ownable {
     function _initEpoch(uint128 epochId) internal {
         require(lastInitializedEpoch.add(1) == epochId, "Epoch can be init only in order");
         lastInitializedEpoch = epochId;
+
+        if ( totalRewardInEpoch[epochId] == 0) {
+            totalRewardInEpoch[epochId] = totalRewardInEpoch[epochId - 1];
+        }
         // call the staking smart contract to init the epoch
         epochs[epochId] = _getPoolSize(epochId);
     }
 
-    function _harvest (uint128 epochId) internal returns (uint) {
+    function _harvest (uint128 epochId, address beneficiary) internal returns (uint) {
         // try to initialize an epoch. if it can't it fails
         // if it fails either user either a BarnBridge account will init not init epochs
         if (lastInitializedEpoch < epochId) {
             _initEpoch(epochId);
         }
         // Set user last harvested epoch
-        lastEpochIdHarvested[msg.sender] = epochId;
+        lastEpochIdHarvested[beneficiary] = epochId;
         // compute and return user total reward. For optimization reasons the transfer have been moved to an upper layer (i.e. massHarvest needs to do a single transfer)
 
         // exit if there is no stake on the epoch
@@ -190,9 +196,13 @@ contract YieldFarm is Ownable {
             return 0;
         }
 
-        return _totalAmountPerEpoch
-        .mul(_getUserBalancePerEpoch(msg.sender, epochId))
-        .div(epochs[epochId]);
+        uint reward = totalRewardInEpoch[epochId]
+            .mul(_getUserBalancePerEpoch(beneficiary, epochId))
+            .div(epochs[epochId]);
+
+        totalRewardsDistributed = totalRewardsDistributed.add(reward);
+
+        return reward;
     }
 
     function _getPoolSize(uint128 epochId) internal view returns (uint) {
