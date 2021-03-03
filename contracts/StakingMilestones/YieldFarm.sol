@@ -3,7 +3,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "./Pausable.sol";
 import "./IStakingMilestones.sol";
 
@@ -71,7 +71,7 @@ contract YieldFarm is Pausable {
     function addStakableToken(address _tokenAddress, uint _weight) external whenNotPaused onlyOwner {
         require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
 
-        noOfStakableTokens = noOfStakableTokens + 1;
+        noOfStakableTokens = uint128(noOfStakableTokens.add(1));
         weightOfStakableToken[_tokenAddress] = _weight;
         stakableToken[noOfStakableTokens] = _tokenAddress;
         
@@ -95,13 +95,13 @@ contract YieldFarm is Pausable {
 
         for (uint128 j = index; j <= noOfStakableTokens; j++) {
             if (j != noOfStakableTokens) {
-                stakableToken[j] = stakableToken[j + 1];
+                stakableToken[j] = stakableToken[uint128(j.add(1))];
             } else {
                 delete stakableToken[j];
             }
         }
 
-        noOfStakableTokens = noOfStakableTokens - 1;
+        noOfStakableTokens = uint128(noOfStakableTokens.sub(1));
         
         emit StakableTokenRemoved(_tokenAddress);
     }
