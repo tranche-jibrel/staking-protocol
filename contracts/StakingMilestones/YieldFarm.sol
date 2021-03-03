@@ -122,10 +122,10 @@ contract YieldFarm is Pausable {
         uint totalDistributedValue;
         uint epochId = _getEpochId().sub(1); // fails in epoch 0
 
-        for (uint128 i = lastEpochIdHarvested[beneficiary] + 1; i <= epochId; i++) {
+        for (uint128 i = uint128(lastEpochIdHarvested[beneficiary].add(1)); i <= epochId; i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
-            totalDistributedValue += _harvest(i, beneficiary);
+            totalDistributedValue = totalDistributedValue.add(_harvest(i, beneficiary));
         }
 
         emit MassHarvest(beneficiary, epochId.sub(lastEpochIdHarvested[beneficiary]), totalDistributedValue);
@@ -175,7 +175,7 @@ contract YieldFarm is Pausable {
         lastInitializedEpoch = epochId;
 
         if ( totalRewardInEpoch[epochId] == 0) {
-            totalRewardInEpoch[epochId] = totalRewardInEpoch[epochId - 1];
+            totalRewardInEpoch[epochId] = totalRewardInEpoch[uint128(epochId.sub(1))];
         }
         // call the staking smart contract to init the epoch
         epochs[epochId] = _getPoolSize(epochId);

@@ -12,7 +12,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
     using SafeMath for uint128;
 
-    uint128 constant private BASE_MULTIPLIER = uint128(1 * 10 ** 18);
+    uint128 constant private BASE_MULTIPLIER = uint128(1e18);
 
     // timestamp for the epoch 1
     // everything before that is considered epoch 0 which won't have a reward but allows for the initial stake
@@ -274,7 +274,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     }
 
     function emergencyWithdraw(address tokenAddress) public {
-        require((getCurrentEpoch() - lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
+        require(getCurrentEpoch().sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
         require(totalUserBalance > 0, "Amount must be > 0");
