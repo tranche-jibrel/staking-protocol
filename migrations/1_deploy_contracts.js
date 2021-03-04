@@ -15,14 +15,12 @@ module.exports = async (deployer, network, accounts) => {
     const toWei = web3.utils.toWei;
 
     await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
-    console.log(Vault.address)    
     let StakingInstance = await deployProxy(StakingMilestones, [Date.now(), 3600], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    console.log(StakingInstance.address)
     let YieldFarmInstance = await deployProxy(YieldFarm, [SLICEAddress, StakingInstance.address, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
     await StakingInstance.setYieldFarmAddress(YieldFarmInstance.address, { from: tokenOwner });
-    await StakingInstance.addStakableToken(SLICEAddress, 200, { from: tokenOwner });
-    await StakingInstance.addStakableToken(LP1Address, 100, { from: tokenOwner });
-    await StakingInstance.addStakableToken(LP2Address, 100, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(SLICEAddress, 200, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(LP1Address, 100, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(LP2Address, 100, { from: tokenOwner });
     console.log('VAULT_ADDRESS=' + Vault.address);
     console.log('STAKING_ADDRESS=' + StakingInstance.address);
     console.log('STAKING_YIELD_ADDRESS=' + YieldFarmInstance.address);    
@@ -40,9 +38,9 @@ module.exports = async (deployer, network, accounts) => {
     let StakingInstance = await deployProxy(StakingMilestones, [Date.now(), 3600], { from: tokenOwner, unsafeAllowCustomTypes: true });
     let YieldFarmInstance = await deployProxy(YieldFarm, [SLICEAddress, StakingInstance.address, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
     await StakingInstance.setYieldFarmAddress(YieldFarmInstance.address, { from: tokenOwner });
-    await StakingInstance.addStakableToken(SLICEAddress, 200, { from: tokenOwner });
-    await StakingInstance.addStakableToken(LP1Address, 100, { from: tokenOwner });
-    await StakingInstance.addStakableToken(LP2Address, 100, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(SLICEAddress, 200, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(LP1Address, 100, { from: tokenOwner });
+    await YieldFarmInstance.addStakableToken(LP2Address, 100, { from: tokenOwner });
     // // await SLICE.methods.transfer(SCInstance.address, toWei('10000')).send({ from: tokenOwner });
     console.log('VAULT_ADDRESS=' + Vault.address);
     console.log('STAKING_ADDRESS=' + StakingInstance.address);
