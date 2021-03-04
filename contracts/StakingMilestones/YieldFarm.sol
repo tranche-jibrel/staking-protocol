@@ -4,11 +4,11 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Pausable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "./IStakingMilestones.sol";
 
 
-contract YieldFarm is Pausable {
+contract YieldFarm is OwnableUpgradeSafe {
 
     // lib
     using SafeMath for uint;
@@ -54,7 +54,7 @@ contract YieldFarm is Pausable {
         address vault,
         uint _totalRewardInEpoch
     ) public initializer {
-        Pausable.__Pausable_init();
+        OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
         totalRewardInEpoch[1] = _totalRewardInEpoch;
         _staking = IStakingMilestones(stakeContract);
@@ -68,7 +68,7 @@ contract YieldFarm is Pausable {
      * @param _tokenAddress contract token address
      * @param _weight weight of the token in percent for calculating rewards
      */
-    function addStakableToken(address _tokenAddress, uint _weight) external whenNotPaused onlyOwner {
+    function addStakableToken(address _tokenAddress, uint _weight) external onlyOwner {
         require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
 
         noOfStakableTokens = noOfStakableTokens + 1;
@@ -82,7 +82,7 @@ contract YieldFarm is Pausable {
      * @dev remove a stakable token contract address, along with its weight
      * @param _tokenAddress contract token address
      */
-    function removeStakableToken(address _tokenAddress) external whenNotPaused onlyOwner {
+    function removeStakableToken(address _tokenAddress) external onlyOwner {
         require(weightOfStakableToken[_tokenAddress] > 0, "YieldFarm: Token is not added");
 
         delete weightOfStakableToken[_tokenAddress];
@@ -106,7 +106,7 @@ contract YieldFarm is Pausable {
         emit StakableTokenRemoved(_tokenAddress);
     }
 
-    function setTotalRewardInParticularEpoch(uint128 epochId, uint _totalRewardInEpoch) external whenNotPaused onlyOwner {
+    function setTotalRewardInParticularEpoch(uint128 epochId, uint _totalRewardInEpoch) external onlyOwner {
         require(epochId > _getEpochId(), "YieldFarm: Epoch ID should be greater than the current epoch ID");
         
         totalRewardInEpoch[epochId] = _totalRewardInEpoch;
@@ -116,7 +116,7 @@ contract YieldFarm is Pausable {
 
     // public methods
     // public method to harvest all the unharvested epochs until current epoch - 1
-    function massHarvest(address beneficiary) external whenNotPaused returns (uint){
+    function massHarvest(address beneficiary) external returns (uint){
         require(msg.sender == beneficiary || msg.sender == address(_staking), "YieldFarm: Not eligible for the harvest");
 
         uint totalDistributedValue;
@@ -137,7 +137,7 @@ contract YieldFarm is Pausable {
         return totalDistributedValue;
     }
 
-    function harvest (uint128 epochId) external whenNotPaused returns (uint){
+    function harvest (uint128 epochId) external returns (uint){
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
