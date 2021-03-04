@@ -3,7 +3,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "./IStakingMilestones.sol";
 
@@ -71,7 +71,7 @@ contract YieldFarm is OwnableUpgradeSafe {
     function addStakableToken(address _tokenAddress, uint _weight) external onlyOwner {
         require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
 
-        noOfStakableTokens = noOfStakableTokens + 1;
+        noOfStakableTokens = uint128(noOfStakableTokens.add(1));
         weightOfStakableToken[_tokenAddress] = _weight;
         stakableToken[noOfStakableTokens] = _tokenAddress;
         
@@ -95,13 +95,13 @@ contract YieldFarm is OwnableUpgradeSafe {
 
         for (uint128 j = index; j <= noOfStakableTokens; j++) {
             if (j != noOfStakableTokens) {
-                stakableToken[j] = stakableToken[j + 1];
+                stakableToken[j] = stakableToken[uint128(j.add(1))];
             } else {
                 delete stakableToken[j];
             }
         }
 
-        noOfStakableTokens = noOfStakableTokens - 1;
+        noOfStakableTokens = uint128(noOfStakableTokens.sub(1));
         
         emit StakableTokenRemoved(_tokenAddress);
     }
@@ -122,7 +122,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         uint totalDistributedValue;
         uint epochId = _getEpochId().sub(1); // fails in epoch 0
 
-        for (uint128 i = lastEpochIdHarvested[beneficiary] + 1; i <= epochId; i++) {
+        for (uint128 i = uint128(lastEpochIdHarvested[beneficiary].add(1)); i <= epochId; i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
             totalDistributedValue += _harvest(i, beneficiary);
@@ -175,7 +175,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         lastInitializedEpoch = epochId;
 
         if ( totalRewardInEpoch[epochId] == 0) {
-            totalRewardInEpoch[epochId] = totalRewardInEpoch[epochId - 1];
+            totalRewardInEpoch[epochId] = totalRewardInEpoch[uint128(epochId.sub(1))];
         }
         // call the staking smart contract to init the epoch
         epochs[epochId] = _getPoolSize(epochId);

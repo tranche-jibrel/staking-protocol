@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity 0.6.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "./IYieldFarm.sol";
 
-contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
+contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
+    using SafeMath for uint128;
 
-    uint128 constant private BASE_MULTIPLIER = uint128(1 * 10 ** 18);
+
+    uint128 constant private BASE_MULTIPLIER = uint128(1e18);
 
     // timestamp for the epoch 1
     // everything before that is considered epoch 0 which won't have a reward but allows for the initial stake
@@ -55,6 +57,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
 
     function initialize (uint256 _epoch1Start, uint256 _epochDuration) public initializer {
         OwnableUpgradeSafe.__Ownable_init();
+        __ReentrancyGuard_init_unchained();
         epoch1Start = _epoch1Start;
         epochDuration = _epochDuration;
     }
@@ -90,7 +93,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
         }
 
         // update the next epoch pool size
-        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch + 1];
+        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch.add(1)];
         pNextEpoch.size = token.balanceOf(address(this));
         pNextEpoch.set = true;
 
@@ -106,9 +109,9 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
             checkpoints.push(Checkpoint(currentEpoch, currentMultiplier, 0, amount));
 
             // next epoch => multiplier is 1, epoch deposits is 0
-            checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, amount, 0));
+            checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, amount, 0));
         } else {
-            uint256 last = checkpoints.length - 1;
+            uint256 last = checkpoints.length.sub(1);
 
             // the last action happened in an older epoch (e.g. a deposit in epoch 3, current epoch is >=5)
             if (checkpoints[last].epochId < currentEpoch) {
@@ -119,7 +122,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
                     currentMultiplier
                 );
                 checkpoints.push(Checkpoint(currentEpoch, multiplier, getCheckpointBalance(checkpoints[last]), amount));
-                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
             }
             // the last action happened in the previous epoch
             else if (checkpoints[last].epochId == currentEpoch) {
@@ -131,18 +134,18 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
                 );
                 checkpoints[last].newDeposits = checkpoints[last].newDeposits.add(amount);
 
-                checkpoints.push(Checkpoint(currentEpoch + 1, BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
             }
             // the last action happened in the current epoch
             else {
-                if (last >= 1 && checkpoints[last - 1].epochId == currentEpoch) {
-                    checkpoints[last - 1].multiplier = computeNewMultiplier(
-                        getCheckpointBalance(checkpoints[last - 1]),
-                        checkpoints[last - 1].multiplier,
+                if (last >= 1 && checkpoints[last.sub(1)].epochId == currentEpoch) {
+                    checkpoints[last.sub(1)].multiplier = computeNewMultiplier(
+                        getCheckpointBalance(checkpoints[last.sub(1)]),
+                        checkpoints[last.sub(1)].multiplier,
                         amount,
                         currentMultiplier
                     );
-                    checkpoints[last - 1].newDeposits = checkpoints[last - 1].newDeposits.add(amount);
+                    checkpoints[last.sub(1)].newDeposits = checkpoints[last.sub(1)].newDeposits.add(amount);
                 }
 
                 checkpoints[last].startBalance = balances[msg.sender][tokenAddress];
@@ -185,7 +188,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
         pNextEpoch.set = true;
 
         Checkpoint[] storage checkpoints = balanceCheckpoints[msg.sender][tokenAddress];
-        uint256 last = checkpoints.length - 1;
+        uint256 last = checkpoints.length.sub(1);
 
         // note: it's impossible to have a withdraw and no checkpoints because the balance would be 0 and revert
 
@@ -205,7 +208,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
         }
         // there was a deposit in the current epoch
         else {
-            Checkpoint storage currentEpochCheckpoint = checkpoints[last - 1];
+            Checkpoint storage currentEpochCheckpoint = checkpoints[last.sub(1)];
 
             uint256 balanceBefore = getCheckpointEffectiveBalance(currentEpochCheckpoint);
 
@@ -261,9 +264,9 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
                 p.set = true;
             } else {
                 require(!epochIsInitialized(tokens[i], epochId), "Staking: epoch already initialized");
-                require(epochIsInitialized(tokens[i], epochId - 1), "Staking: previous epoch not initialized");
+                require(epochIsInitialized(tokens[i], uint128(epochId.sub(1))), "Staking: previous epoch not initialized");
 
-                p.size = poolSize[tokens[i]][epochId - 1].size;
+                p.size = poolSize[tokens[i]][epochId.sub(1)].size;
                 p.set = true;
             }
         }
@@ -272,7 +275,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
     }
 
     function emergencyWithdraw(address tokenAddress) public {
-        require((getCurrentEpoch() - lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
+        require(getCurrentEpoch().sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
         require(totalUserBalance > 0, "Amount must be > 0");
@@ -299,7 +302,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
         }
 
         uint min = 0;
-        uint max = checkpoints.length - 1;
+        uint max = checkpoints.length.sub(1);
 
         // shortcut for blocks newer than the latest checkpoint == current balance
         if (epochId >= checkpoints[max].epochId) {
@@ -308,11 +311,11 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
 
         // binary search of the value in the array
         while (max > min) {
-            uint mid = (max + min + 1) / 2;
+            uint mid = (max.add(min).add(1)).div(2);
             if (checkpoints[mid].epochId <= epochId) {
                 min = mid;
             } else {
-                max = mid - 1;
+                max = mid.sub(1);
             }
         }
 
@@ -334,7 +337,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
             return 0;
         }
 
-        return uint128((block.timestamp - epoch1Start) / epochDuration + 1);
+        return uint128((block.timestamp.sub(epoch1Start)).div(epochDuration).add(1));
     }
 
     /*
@@ -366,7 +369,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
         uint128 currentEpoch = getCurrentEpoch();
         uint256 currentEpochEnd = epoch1Start + currentEpoch * epochDuration;
         uint256 timeLeft = currentEpochEnd - block.timestamp;
-        uint128 multiplier = uint128(timeLeft * BASE_MULTIPLIER / epochDuration);
+        uint128 multiplier = uint128(timeLeft.mul(BASE_MULTIPLIER).div(epochDuration));
 
         return multiplier;
     }
