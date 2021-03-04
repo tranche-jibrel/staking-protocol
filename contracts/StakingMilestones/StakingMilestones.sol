@@ -4,11 +4,11 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "./IYieldFarm.sol";
 
-contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
+contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
 
     uint128 constant private BASE_MULTIPLIER = uint128(1 * 10 ** 18);
@@ -55,6 +55,7 @@ contract StakingMilestones is ReentrancyGuard, OwnableUpgradeSafe {
 
     function initialize (uint256 _epoch1Start, uint256 _epochDuration) public initializer {
         OwnableUpgradeSafe.__Ownable_init();
+        __ReentrancyGuard_init_unchained();
         epoch1Start = _epoch1Start;
         epochDuration = _epochDuration;
     }
