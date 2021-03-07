@@ -15,10 +15,10 @@ contract YieldFarm is OwnableUpgradeSafe {
     using SafeMath for uint128;
 
     // addreses
-    address private _vault;
     // contracts
-    IERC20 private _slice;
-    IStakingMilestones private _staking;
+    address public _vault;
+    IERC20 public _slice;
+    IStakingMilestones public _staking;
 
     // Stakable token details
     mapping (address => uint) public weightOfStakableToken;
