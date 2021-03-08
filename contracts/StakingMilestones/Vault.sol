@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
 
 contract Vault is OwnableUpgradeSafe {
 
-    IERC20 private SLICE;
+    IERC20 public SLICE;
 
     constructor (address sliceAddress) public {
         OwnableUpgradeSafe.__Ownable_init();
