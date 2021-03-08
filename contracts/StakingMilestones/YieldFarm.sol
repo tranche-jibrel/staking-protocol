@@ -168,25 +168,27 @@ contract YieldFarm is OwnableUpgradeSafe {
 
     function getTotalAccruedRewards(address user) external view returns (uint rewards) {
         uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+        uint128 currentEpoch = _getEpochId();
 
-        if (firstRewardableEpoch == lastInitializedEpoch) return 0;
+        if (firstRewardableEpoch == currentEpoch) return 0;
 
-        for (uint128 i = firstRewardableEpoch; i <= lastInitializedEpoch; i++) {
+        for (uint128 i = firstRewardableEpoch; i < currentEpoch; i++) {
             rewards = rewards.add(totalRewardInEpoch[i]
                 .mul(_getUserBalancePerEpoch(user, i))
-                .div(epochs[i]));
+                .div(_getPoolSize(i)));
         }
     }
 
     function getTotalAccruedRewardsForToken(address user, address token) external view returns (uint rewards) {
         uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+        uint128 currentEpoch = _getEpochId();
 
-        if (firstRewardableEpoch == lastInitializedEpoch) return 0;
+        if (firstRewardableEpoch == currentEpoch) return 0;
 
-        for (uint128 i = firstRewardableEpoch; i <= lastInitializedEpoch; i++) {
+        for (uint128 i = firstRewardableEpoch; i < currentEpoch; i++) {
             rewards = rewards.add(totalRewardInEpoch[i]
                 .mul(((_staking.getEpochUserBalance(user, token, i)).mul(weightOfStakableToken[token])).div(100))
-                .div(epochs[i]));
+                .div(_getPoolSize(i)));
         }
     }
 
