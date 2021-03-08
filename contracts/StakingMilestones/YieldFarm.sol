@@ -166,6 +166,30 @@ contract YieldFarm is OwnableUpgradeSafe {
         return lastEpochIdHarvested[msg.sender];
     }
 
+    function getTotalAccruedRewards(address user) external view returns (uint rewards) {
+        uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+
+        if (firstRewardableEpoch == lastInitializedEpoch) return 0;
+
+        for (uint128 i = firstRewardableEpoch; i <= lastInitializedEpoch; i++) {
+            rewards = rewards.add(totalRewardInEpoch[i]
+                .mul(_getUserBalancePerEpoch(user, i))
+                .div(epochs[i]));
+        }
+    }
+
+    function getTotalAccruedRewardsForToken(address user, address token) external view returns (uint rewards) {
+        uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+
+        if (firstRewardableEpoch == lastInitializedEpoch) return 0;
+
+        for (uint128 i = firstRewardableEpoch; i <= lastInitializedEpoch; i++) {
+            rewards = rewards.add(totalRewardInEpoch[i]
+                .mul(((_staking.getEpochUserBalance(user, token, i)).mul(weightOfStakableToken[token])).div(100))
+                .div(epochs[i]));
+        }
+    }
+
     // internal methods
 
     function _initEpoch(uint128 epochId) internal {
