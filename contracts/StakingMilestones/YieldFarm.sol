@@ -123,7 +123,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         for (uint128 i = uint128(lastEpochIdHarvested[msg.sender].add(1)); i <= epochId; i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
-            totalDistributedValue += _harvest(i);
+            totalDistributedValue = totalDistributedValue.add(_harvest(i));
         }
 
         emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);

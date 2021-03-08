@@ -171,7 +171,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         }
 
         // update the pool size of the next epoch to its current balance
-        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch + 1];
+        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch.add(1)];
         pNextEpoch.size = token.balanceOf(address(this));
         pNextEpoch.set = true;
 
@@ -353,8 +353,8 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
      */
     function currentEpochMultiplier() public view returns (uint128) {
         uint128 currentEpoch = getCurrentEpoch();
-        uint256 currentEpochEnd = epoch1Start + currentEpoch * epochDuration;
-        uint256 timeLeft = currentEpochEnd - block.timestamp;
+        uint256 currentEpochEnd = epoch1Start.add(currentEpoch.mul(epochDuration));
+        uint256 timeLeft = currentEpochEnd.sub(block.timestamp);
         uint128 multiplier = uint128(timeLeft.mul(BASE_MULTIPLIER).div(epochDuration));
 
         return multiplier;
