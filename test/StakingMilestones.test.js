@@ -6,7 +6,6 @@ const {
   time
 } = require("@openzeppelin/test-helpers");
 
-const YieldFarm = contract.fromArtifact("YieldFarm");
 const StakingMilestones = contract.fromArtifact("StakingMilestones");
 const Vault = contract.fromArtifact("Vault");
 const Token = contract.fromArtifact("MyERC20");
@@ -15,7 +14,7 @@ const BigNumber = web3.utils.BN;
 require("chai").use(require("chai-bn")(BigNumber)).should();
 
 describe("StakingMilestones", function () {
-  const [owner, anotherAccount, user1, user2] = accounts;
+  const [owner, anotherAccount, user1] = accounts;
 
   const epochRewardCap = web3.utils.toWei((1000).toString(), "ether");
   var startTime;
@@ -48,22 +47,6 @@ describe("StakingMilestones", function () {
       web3.utils.toWei((10000).toString(), "ether"),
       { from: owner }
     );
-
-    this.yieldFarm = await YieldFarm.new({
-      from: owner
-    });
-
-    await this.yieldFarm.initialize(
-      this.slice.address,
-      this.staking.address,
-      this.vault.address,
-      epochRewardCap,
-      {
-        from: owner
-      }
-    );
-
-    await this.staking.setYieldFarmAddress(this.yieldFarm.address, { from: owner });
   });
 
   describe("initialize()", function () {
@@ -73,24 +56,6 @@ describe("StakingMilestones", function () {
 
       const duration = await this.staking.epochDuration();
       expect(duration).to.be.bignumber.equal(new BN(60).toString());
-    });
-  });
-
-  describe("setYieldFarmAddress()", function () {
-    it("Should set yield farm address", async function () {
-      await this.staking.setYieldFarmAddress(this.yieldFarm.address, { from: owner });
-
-      const yieldFarm = await this.staking.yieldFarm();
-      expect(yieldFarm).to.be.equal(this.yieldFarm.address);
-    });
-
-    it("Should not set yield farm address if not called by owner", async function () {
-      await expectRevert(
-        this.staking.setYieldFarmAddress(this.yieldFarm.address, {
-          from: anotherAccount
-        }),
-        "Ownable: caller is not the owner"
-      );
     });
   });
 
@@ -210,13 +175,9 @@ describe("StakingMilestones", function () {
       await this.dai.approve(this.staking.address, web3.utils.toWei((100).toString(), "ether"), { from: user1 });
 
       await this.staking.deposit(this.dai.address, web3.utils.toWei((100).toString(), "ether"), { from: user1 });
-
-      await this.vault.setAllowance(this.yieldFarm.address, web3.utils.toWei((10000).toString(), "ether"), { from: owner });
-
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, { from: owner });
     });
 
-    it("Should withdraw and collect rewards", async function () {
+    it("Should withdraw", async function () {
       var balance = await this.staking.balanceOf(user1, this.dai.address);
       expect(balance).to.be.bignumber.equal(web3.utils.toWei((100).toString(), "ether"));
 
@@ -230,9 +191,6 @@ describe("StakingMilestones", function () {
 
       balance = await this.staking.balanceOf(user1, this.dai.address);
       expect(balance).to.be.bignumber.equal(web3.utils.toWei((90).toString(), "ether"));
-
-      const sliceBalance = await this.slice.balanceOf(user1);
-      expect(sliceBalance).to.be.bignumber.equal(web3.utils.toWei((1000).toString(), "ether"));
     });
 
     it("Should withdraw multiple times", async function () {
