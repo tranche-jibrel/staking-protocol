@@ -116,22 +116,20 @@ contract YieldFarm is OwnableUpgradeSafe {
 
     // public methods
     // public method to harvest all the unharvested epochs until current epoch - 1
-    function massHarvest(address beneficiary) external returns (uint){
-        require(msg.sender == beneficiary || msg.sender == address(_staking), "YieldFarm: Not eligible for the harvest");
-
+    function massHarvest() external returns (uint){
         uint totalDistributedValue;
         uint epochId = _getEpochId().sub(1); // fails in epoch 0
 
-        for (uint128 i = uint128(lastEpochIdHarvested[beneficiary].add(1)); i <= epochId; i++) {
+        for (uint128 i = uint128(lastEpochIdHarvested[msg.sender].add(1)); i <= epochId; i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
-            totalDistributedValue += _harvest(i, beneficiary);
+            totalDistributedValue = totalDistributedValue.add(_harvest(i));
         }
 
-        emit MassHarvest(beneficiary, epochId.sub(lastEpochIdHarvested[beneficiary]), totalDistributedValue);
+        emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);
 
         if (totalDistributedValue > 0) {
-            _slice.transferFrom(_vault, beneficiary, totalDistributedValue);
+            _slice.transferFrom(_vault, msg.sender, totalDistributedValue);
         }
 
         return totalDistributedValue;
@@ -141,7 +139,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
-        uint userReward = _harvest(epochId, msg.sender);
+        uint userReward = _harvest(epochId);
         if (userReward > 0) {
             _slice.transferFrom(_vault, msg.sender, userReward);
         }
@@ -181,14 +179,14 @@ contract YieldFarm is OwnableUpgradeSafe {
         epochs[epochId] = _getPoolSize(epochId);
     }
 
-    function _harvest (uint128 epochId, address beneficiary) internal returns (uint) {
+    function _harvest (uint128 epochId) internal returns (uint) {
         // try to initialize an epoch. if it can't it fails
         // if it fails either user either a BarnBridge account will init not init epochs
         if (lastInitializedEpoch < epochId) {
             _initEpoch(epochId);
         }
         // Set user last harvested epoch
-        lastEpochIdHarvested[beneficiary] = epochId;
+        lastEpochIdHarvested[msg.sender] = epochId;
         // compute and return user total reward. For optimization reasons the transfer have been moved to an upper layer (i.e. massHarvest needs to do a single transfer)
 
         // exit if there is no stake on the epoch
@@ -197,7 +195,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         }
 
         uint reward = totalRewardInEpoch[epochId]
-            .mul(_getUserBalancePerEpoch(beneficiary, epochId))
+            .mul(_getUserBalancePerEpoch(msg.sender, epochId))
             .div(epochs[epochId]);
 
         totalRewardsDistributed = totalRewardsDistributed.add(reward);

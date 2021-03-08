@@ -11,7 +11,7 @@ mkdir dist
 
 # Staking
 echo "Flattening # Staking contract"
-npx truffle-flattener ./contracts/Staking.sol | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' | awk '/pragma solidity/&&c++>0 {next} 1' | awk '/author/&&c++>0 {next} 1' | awk '/summary/&&c++>0 {next} 1' | awk '/Created on/&&c++>0 {next}  1' | sed '/^[[:blank:]]*\/\/ File/d;s/#.*//' >./dist/Staking.sol
+npx truffle-flattener ./contracts/OldStaking/Staking.sol | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' | awk '/pragma solidity/&&c++>0 {next} 1' | awk '/author/&&c++>0 {next} 1' | awk '/summary/&&c++>0 {next} 1' | awk '/Created on/&&c++>0 {next}  1' | sed '/^[[:blank:]]*\/\/ File/d;s/#.*//' >./dist/Staking.sol
 
 # StakingMilestones
 echo "Flattening # StakingMilestones contract"
@@ -20,3 +20,11 @@ npx truffle-flattener ./contracts/StakingMilestones/StakingMilestones.sol | awk 
 # YieldFarm
 echo "Flattening # YieldFarm contract"
 npx truffle-flattener ./contracts/StakingMilestones/YieldFarm.sol | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' | awk '/pragma solidity/&&c++>0 {next} 1' | awk '/author/&&c++>0 {next} 1' | awk '/summary/&&c++>0 {next} 1' | awk '/Created on/&&c++>0 {next}  1' | sed '/^[[:blank:]]*\/\/ File/d;s/#.*//' >./dist/YieldFarm.sol
+
+# Vault
+echo "Flattening # Vault contract"
+npx truffle-flattener ./contracts/StakingMilestones/Vault.sol | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' | awk '/pragma solidity/&&c++>0 {next} 1' | awk '/author/&&c++>0 {next} 1' | awk '/summary/&&c++>0 {next} 1' | awk '/Created on/&&c++>0 {next}  1' | sed '/^[[:blank:]]*\/\/ File/d;s/#.*//' >./dist/Vault.sol
+
+# MyERC20
+echo "Flattening # MyERC20 contract"
+npx truffle-flattener ./contracts/test/MyERC20.sol | awk '/SPDX-License-Identifier/&&c++>0 {next} 1' | awk '/pragma experimental ABIEncoderV2;/&&c++>0 {next} 1' | awk '/pragma solidity/&&c++>0 {next} 1' | awk '/author/&&c++>0 {next} 1' | awk '/summary/&&c++>0 {next} 1' | awk '/Created on/&&c++>0 {next}  1' | sed '/^[[:blank:]]*\/\/ File/d;s/#.*//' >./dist/MyERC20.sol

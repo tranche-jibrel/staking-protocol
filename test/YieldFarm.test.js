@@ -638,7 +638,7 @@ describe("YieldFarm", function () {
         Number(await time.latest()) + Number(time.duration.minutes(6));
       await time.increaseTo(epoch1);
 
-      await this.yieldFarm.massHarvest(user1, { from: user1 });
+      await this.yieldFarm.massHarvest({ from: user1 });
 
       const reward = await this.slice.balanceOf(user1);
       expect(reward).to.be.bignumber.equal(
@@ -651,7 +651,7 @@ describe("YieldFarm", function () {
         Number(await time.latest()) + Number(time.duration.minutes(6));
       await time.increaseTo(epoch1);
 
-      await this.yieldFarm.massHarvest(user2, { from: user2 });
+      await this.yieldFarm.massHarvest({ from: user2 });
 
       const reward = await this.slice.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(
@@ -664,7 +664,7 @@ describe("YieldFarm", function () {
         Number(await time.latest()) + Number(time.duration.minutes(7));
       await time.increaseTo(epoch2);
 
-      await this.yieldFarm.massHarvest(user1, { from: user1 });
+      await this.yieldFarm.massHarvest({ from: user1 });
 
       const reward = await this.slice.balanceOf(user1);
       expect(reward).to.be.bignumber.equal(
@@ -677,24 +677,11 @@ describe("YieldFarm", function () {
         Number(await time.latest()) + Number(time.duration.minutes(7));
       await time.increaseTo(epoch2);
 
-      await this.yieldFarm.massHarvest(user2, { from: user2 });
+      await this.yieldFarm.massHarvest({ from: user2 });
 
       const reward = await this.slice.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(
         web3.utils.toWei((1000).toString(), "ether")
-      );
-    });
-
-    it("Should not massHarvest for user1 if not called by user1", async function () {
-      const epoch1 =
-        Number(await time.latest()) + Number(time.duration.minutes(6));
-      await time.increaseTo(epoch1);
-
-      await expectRevert(
-        this.yieldFarm.massHarvest(user1, {
-          from: user2
-        }),
-        "YieldFarm: Not eligible for the harvest"
       );
     });
 
@@ -709,7 +696,7 @@ describe("YieldFarm", function () {
       );
 
       await expectRevert(
-        this.yieldFarm.massHarvest(user2, {
+        this.yieldFarm.massHarvest({
           from: user2
         }),
         "ERC20: transfer amount exceeds allowance"

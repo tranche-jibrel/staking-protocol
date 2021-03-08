@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "./IYieldFarm.sol";
 
 contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
@@ -21,9 +20,6 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
 
     // duration of each epoch
     uint256 public epochDuration;
-
-    // Yield Farm contract
-    IYieldFarm public yieldFarm;
 
     // holds the current balance of the user for each token
     mapping(address => mapping(address => uint256)) private balances;
@@ -53,19 +49,12 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     event Withdraw(address indexed user, address indexed tokenAddress, uint256 amount);
     event ManualEpochInit(address indexed caller, uint128 indexed epochId, address[] tokens);
     event EmergencyWithdraw(address indexed user, address indexed tokenAddress, uint256 amount);
-    event YieldFarmAddressUpdated(address indexed yieldFarmAddress);
 
     function initialize (uint256 _epoch1Start, uint256 _epochDuration) public initializer {
         OwnableUpgradeSafe.__Ownable_init();
         __ReentrancyGuard_init_unchained();
         epoch1Start = _epoch1Start;
         epochDuration = _epochDuration;
-    }
-
-    function setYieldFarmAddress(address _yieldFarm) external onlyOwner  {
-        yieldFarm = IYieldFarm(_yieldFarm);
-
-        emit YieldFarmAddressUpdated(_yieldFarm);
     }
 
     /*
@@ -161,7 +150,6 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
 
     /*
      * Removes the deposit of the user and sends the amount of `tokenAddress` back to the `user`
-     * Withdraws all uncollected rewards upto the previous epoch by calling massHarvest() from YieldFarm
      */
     function withdraw(address tokenAddress, uint256 amount) public nonReentrant {
         require(balances[msg.sender][tokenAddress] >= amount, "Staking: balance too small");
@@ -183,7 +171,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         }
 
         // update the pool size of the next epoch to its current balance
-        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch + 1];
+        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch.add(1)];
         pNextEpoch.size = token.balanceOf(address(this));
         pNextEpoch.set = true;
 
@@ -242,8 +230,6 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
 
             checkpoints[last].startBalance = balances[msg.sender][tokenAddress];
         }
-
-        yieldFarm.massHarvest(msg.sender); // Will fail in epoch 0
 
         emit Withdraw(msg.sender, tokenAddress, amount);
     }
@@ -367,8 +353,8 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
      */
     function currentEpochMultiplier() public view returns (uint128) {
         uint128 currentEpoch = getCurrentEpoch();
-        uint256 currentEpochEnd = epoch1Start + currentEpoch * epochDuration;
-        uint256 timeLeft = currentEpochEnd - block.timestamp;
+        uint256 currentEpochEnd = epoch1Start.add(currentEpoch.mul(epochDuration));
+        uint256 timeLeft = currentEpochEnd.sub(block.timestamp);
         uint128 multiplier = uint128(timeLeft.mul(BASE_MULTIPLIER).div(epochDuration));
 
         return multiplier;
