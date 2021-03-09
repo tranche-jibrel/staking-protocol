@@ -38,8 +38,8 @@ module.exports = async (deployer, network, accounts) => {
     const currentTime = ( Date.now() - Date.now() % 1000 ) / 1000;
 
     let VaultInstance = await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
-    let StakingInstance = await deployProxy(StakingMilestones, [currentTime, 43200], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    let YieldFarmInstance = await deployProxy(YieldFarm, [SLICEAddress, StakingInstance.address, Vault.address, toWei('1')], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    let StakingInstance = await deployProxy(StakingMilestones, [currentTime, 7200], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    let YieldFarmInstance = await deployProxy(YieldFarm, [SLICEAddress, StakingInstance.address, Vault.address, toWei('1000')], { from: tokenOwner, unsafeAllowCustomTypes: true });
 
     await SLICE.methods.transfer(Vault.address, toWei('10000')).send({ from: tokenOwner });
     await VaultInstance.setAllowance(YieldFarmInstance.address, toWei('10000'), { from: tokenOwner });
