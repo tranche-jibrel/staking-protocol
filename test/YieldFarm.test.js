@@ -44,6 +44,14 @@ describe("YieldFarm", function () {
       { from: owner }
     );
 
+    this.dai = await Token.new({
+      from: owner,
+    });
+
+    await this.dai.initialize(10, "DAIToken", "DAI", {
+      from: owner,
+    });
+
     this.yieldFarm = await YieldFarm.new({
       from: owner
     });
@@ -51,6 +59,7 @@ describe("YieldFarm", function () {
     await this.yieldFarm.initialize(
       this.slice.address,
       this.staking.address,
+      this.dai.address,
       this.vault.address,
       epochRewardCap,
       {
@@ -70,126 +79,11 @@ describe("YieldFarm", function () {
       const slice = await this.yieldFarm._slice();
       expect(slice).to.be.equal(this.slice.address);
 
+      const dai = await this.yieldFarm._stakableToken();
+      expect(dai).to.be.equal(this.dai.address);
+
       const totalReward = await this.yieldFarm.totalRewardInEpoch(1);
       expect(totalReward).to.be.bignumber.equal(epochRewardCap);
-    });
-  });
-
-  describe("addStakableToken()", function () {
-    beforeEach(async function () {
-      this.dai = await Token.new({
-        from: owner,
-      });
-
-      await this.dai.initialize(10, "DAIToken", "DAI", {
-        from: owner,
-      });
-    });
-
-    it("Should add stakable token", async function () {
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, {
-        from: owner,
-      });
-
-      const num = await this.yieldFarm.noOfStakableTokens();
-      expect(num).to.be.bignumber.equal(new BN(1).toString());
-
-      const tokenAddress = await this.yieldFarm.stakableToken(1);
-      expect(tokenAddress).to.be.equal(this.dai.address);
-
-      const weight = await this.yieldFarm.weightOfStakableToken(
-        this.dai.address
-      );
-      expect(weight).to.be.bignumber.equal(new BN(100).toString());
-    });
-
-    it("Should not add stakable token if not called by owner", async function () {
-      await expectRevert(
-        this.yieldFarm.addStakableToken(this.dai.address, 100, {
-          from: anotherAccount,
-        }),
-        "Ownable: caller is not the owner"
-      );
-    });
-
-    it("Should not add stakable token if not called by owner", async function () {
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, {
-        from: owner,
-      });
-
-      await expectRevert(
-        this.yieldFarm.addStakableToken(this.dai.address, 100, {
-          from: owner,
-        }),
-        "YieldFarm: Token already added"
-      );
-    });
-  });
-
-  describe("removeStakableToken()", function () {
-    beforeEach(async function () {
-      this.dai = await Token.new({
-        from: owner
-      });
-
-      this.usdc = await Token.new({
-        from: owner
-      });
-
-      this.usdt = await Token.new({
-        from: owner
-      });
-
-      await this.dai.initialize(10, "DAIToken", "DAI", {
-        from: owner
-      });
-
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdc.address, 200, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdt.address, 300, {
-        from: owner
-      });
-    });
-
-    it("Should remove stakable token", async function () {
-      await this.yieldFarm.removeStakableToken(this.dai.address, {
-        from: owner
-      });
-
-      const num = await this.yieldFarm.noOfStakableTokens();
-      expect(num).to.be.bignumber.equal(new BN(2).toString());
-
-      const tokenAddress = await this.yieldFarm.stakableToken(1);
-      expect(tokenAddress).to.be.equal(this.usdc.address);
-
-      const tokenAddress2 = await this.yieldFarm.stakableToken(2);
-      expect(tokenAddress2).to.be.equal(this.usdt.address);
-    });
-
-    it("Should not remove stakable token if not called by owner", async function () {
-      await expectRevert(
-        this.yieldFarm.removeStakableToken(this.dai.address, {
-          from: anotherAccount,
-        }),
-        "Ownable: caller is not the owner"
-      );
-    });
-
-    it("Should not add stakable token if not called by owner", async function () {
-      await this.yieldFarm.removeStakableToken(this.dai.address, {
-        from: owner
-      });
-
-      await expectRevert(
-        this.yieldFarm.removeStakableToken(this.dai.address, {
-          from: owner
-        }),
-        "YieldFarm: Token is not added"
-      );
     });
   });
 
@@ -226,45 +120,12 @@ describe("YieldFarm", function () {
 
   describe("harvest()", function () {
     beforeEach(async function () {
-      this.dai = await Token.new({
-        from: owner
-      });
-
-      await this.dai.initialize(1000, "DAIToken", "DAI", {
-        from: owner
-      });
-
-      this.usdc = await Token.new({
-        from: owner
-      });
-
-      await this.usdc.initialize(1000, "USDCToken", "USDC", {
-        from: owner
-      });
-
-      this.usdt = await Token.new({
-        from: owner
-      });
-
-      await this.usdt.initialize(1000, "USDTToken", "USDT", {
-        from: owner
-      });
-
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdc.address, 200, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdt.address, 300, {
-        from: owner
-      });
-
       await this.slice.transfer(
         this.vault.address,
         web3.utils.toWei((10000).toString(), "ether"),
         { from: owner }
       );
+
       await this.vault.setAllowance(
         this.yieldFarm.address,
         web3.utils.toWei((10000).toString(), "ether"),
@@ -277,34 +138,10 @@ describe("YieldFarm", function () {
         1,
         web3.utils.toWei((10).toString(), "ether")
       );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdc.address,
-        1,
-        web3.utils.toWei((10).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdt.address,
-        1,
-        web3.utils.toWei((10).toString(), "ether")
-      );
 
       await this.staking.setEpochUserBalance(
         user2,
         this.dai.address,
-        1,
-        web3.utils.toWei((30).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdc.address,
-        1,
-        web3.utils.toWei((30).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdt.address,
         1,
         web3.utils.toWei((30).toString(), "ether")
       );
@@ -315,34 +152,10 @@ describe("YieldFarm", function () {
         2,
         web3.utils.toWei((20).toString(), "ether")
       );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdc.address,
-        2,
-        web3.utils.toWei((20).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdt.address,
-        2,
-        web3.utils.toWei((20).toString(), "ether")
-      );
 
       await this.staking.setEpochUserBalance(
         user1,
         this.dai.address,
-        2,
-        web3.utils.toWei((60).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdc.address,
-        2,
-        web3.utils.toWei((60).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdt.address,
         2,
         web3.utils.toWei((60).toString(), "ether")
       );
@@ -352,29 +165,9 @@ describe("YieldFarm", function () {
         1,
         web3.utils.toWei((40).toString(), "ether")
       );
-      await this.staking.setEpochPoolSize(
-        this.usdc.address,
-        1,
-        web3.utils.toWei((40).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdt.address,
-        1,
-        web3.utils.toWei((40).toString(), "ether")
-      );
 
       await this.staking.setEpochPoolSize(
         this.dai.address,
-        2,
-        web3.utils.toWei((80).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdc.address,
-        2,
-        web3.utils.toWei((80).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdt.address,
         2,
         web3.utils.toWei((80).toString(), "ether")
       );
@@ -479,45 +272,12 @@ describe("YieldFarm", function () {
 
   describe("massHarvest()", function () {
     beforeEach(async function () {
-      this.dai = await Token.new({
-        from: owner
-      });
-
-      await this.dai.initialize(1000, "DAIToken", "DAI", {
-        from: owner
-      });
-
-      this.usdc = await Token.new({
-        from: owner
-      });
-
-      await this.usdc.initialize(1000, "USDCToken", "USDC", {
-        from: owner
-      });
-
-      this.usdt = await Token.new({
-        from: owner
-      });
-
-      await this.usdt.initialize(1000, "USDTToken", "USDT", {
-        from: owner
-      });
-
-      await this.yieldFarm.addStakableToken(this.dai.address, 100, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdc.address, 200, {
-        from: owner
-      });
-      await this.yieldFarm.addStakableToken(this.usdt.address, 300, {
-        from: owner
-      });
-
       await this.slice.transfer(
         this.vault.address,
         web3.utils.toWei((10000).toString(), "ether"),
         { from: owner }
       );
+
       await this.vault.setAllowance(
         this.yieldFarm.address,
         web3.utils.toWei((10000).toString(), "ether"),
@@ -530,34 +290,10 @@ describe("YieldFarm", function () {
         1,
         web3.utils.toWei((10).toString(), "ether")
       );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdc.address,
-        1,
-        web3.utils.toWei((10).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdt.address,
-        1,
-        web3.utils.toWei((10).toString(), "ether")
-      );
 
       await this.staking.setEpochUserBalance(
         user2,
         this.dai.address,
-        1,
-        web3.utils.toWei((30).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdc.address,
-        1,
-        web3.utils.toWei((30).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdt.address,
         1,
         web3.utils.toWei((30).toString(), "ether")
       );
@@ -568,34 +304,10 @@ describe("YieldFarm", function () {
         2,
         web3.utils.toWei((20).toString(), "ether")
       );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdc.address,
-        2,
-        web3.utils.toWei((20).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user2,
-        this.usdt.address,
-        2,
-        web3.utils.toWei((20).toString(), "ether")
-      );
 
       await this.staking.setEpochUserBalance(
         user1,
         this.dai.address,
-        2,
-        web3.utils.toWei((60).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdc.address,
-        2,
-        web3.utils.toWei((60).toString(), "ether")
-      );
-      await this.staking.setEpochUserBalance(
-        user1,
-        this.usdt.address,
         2,
         web3.utils.toWei((60).toString(), "ether")
       );
@@ -605,29 +317,9 @@ describe("YieldFarm", function () {
         1,
         web3.utils.toWei((40).toString(), "ether")
       );
-      await this.staking.setEpochPoolSize(
-        this.usdc.address,
-        1,
-        web3.utils.toWei((40).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdt.address,
-        1,
-        web3.utils.toWei((40).toString(), "ether")
-      );
 
       await this.staking.setEpochPoolSize(
         this.dai.address,
-        2,
-        web3.utils.toWei((80).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdc.address,
-        2,
-        web3.utils.toWei((80).toString(), "ether")
-      );
-      await this.staking.setEpochPoolSize(
-        this.usdt.address,
         2,
         web3.utils.toWei((80).toString(), "ether")
       );

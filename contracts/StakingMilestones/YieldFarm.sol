@@ -18,12 +18,8 @@ contract YieldFarm is OwnableUpgradeSafe {
     // contracts
     address public _vault;
     IERC20 public _slice;
+    IERC20 public _stakableToken;
     IStakingMilestones public _staking;
-
-    // Stakable token details
-    mapping (address => uint) public weightOfStakableToken;
-    uint128 public noOfStakableTokens;
-    mapping (uint128 => address) public stakableToken;
 
     // Store total pool size of each epoch
     mapping (uint128 => uint) private epochs;
@@ -43,67 +39,24 @@ contract YieldFarm is OwnableUpgradeSafe {
     // events
     event MassHarvest(address indexed user, uint256 epochsHarvested, uint256 totalValue);
     event Harvest(address indexed user, uint128 indexed epochId, uint256 amount);
-    event StakableTokenAdded(address indexed newTokenAddress, uint256 weight);
-    event StakableTokenRemoved(address indexed tokenAddress);
     event TotalRewardInEpochUpdated(uint128 epochId, uint totalReward);
 
     // constructor
     function initialize(
         address sliceAddress,
         address stakeContract,
+        address stakableToken,
         address vault,
         uint _totalRewardInEpoch
     ) public initializer {
         OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
+        _stakableToken = IERC20(stakableToken);
         totalRewardInEpoch[1] = _totalRewardInEpoch;
         _staking = IStakingMilestones(stakeContract);
         _vault = vault;
         epochStart = _staking.epoch1Start();
         epochDuration = _staking.epochDuration();
-    }
-
-    /** 
-     * @dev add a stakable token contract address, along with its weight
-     * @param _tokenAddress contract token address
-     * @param _weight weight of the token in percent for calculating rewards
-     */
-    function addStakableToken(address _tokenAddress, uint _weight) external onlyOwner {
-        require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
-
-        noOfStakableTokens = uint128(noOfStakableTokens.add(1));
-        weightOfStakableToken[_tokenAddress] = _weight;
-        stakableToken[noOfStakableTokens] = _tokenAddress;
-        
-        emit StakableTokenAdded(_tokenAddress, _weight);
-    }
-
-    /** 
-     * @dev remove a stakable token contract address, along with its weight
-     * @param _tokenAddress contract token address
-     */
-    function removeStakableToken(address _tokenAddress) external onlyOwner {
-        require(weightOfStakableToken[_tokenAddress] > 0, "YieldFarm: Token is not added");
-
-        delete weightOfStakableToken[_tokenAddress];
-
-        uint128 index;
-
-        for (uint128 i = 1; i <= noOfStakableTokens; i++) {
-            if (stakableToken[i] == _tokenAddress) index = i;
-        }
-
-        for (uint128 j = index; j <= noOfStakableTokens; j++) {
-            if (j != noOfStakableTokens) {
-                stakableToken[j] = stakableToken[uint128(j.add(1))];
-            } else {
-                delete stakableToken[j];
-            }
-        }
-
-        noOfStakableTokens = uint128(noOfStakableTokens.sub(1));
-        
-        emit StakableTokenRemoved(_tokenAddress);
     }
 
     function setTotalRewardInParticularEpoch(uint128 epochId, uint _totalRewardInEpoch) external onlyOwner {
@@ -179,19 +132,6 @@ contract YieldFarm is OwnableUpgradeSafe {
         }
     }
 
-    function getTotalAccruedRewardsForToken(address user, address token) external view returns (uint rewards) {
-        uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
-        uint128 currentEpoch = _getEpochId();
-
-        if (firstRewardableEpoch == currentEpoch) return 0;
-
-        for (uint128 i = firstRewardableEpoch; i < currentEpoch; i++) {
-            rewards = rewards.add(totalRewardInEpoch[i]
-                .mul(((_staking.getEpochUserBalance(user, token, i)).mul(weightOfStakableToken[token])).div(100))
-                .div(_getPoolSize(i)));
-        }
-    }
-
     // internal methods
 
     function _initEpoch(uint128 epochId) internal {
@@ -230,27 +170,15 @@ contract YieldFarm is OwnableUpgradeSafe {
     }
 
     function _getPoolSize(uint128 epochId) internal view returns (uint) {
-        // retrieve normalised stable coins total staked in epoch
-        uint size;
-        address token;
-        for (uint128 i = 1; i <= noOfStakableTokens; i++) {
-            token = stakableToken[i];
-            size = size.add(((_staking.getEpochPoolSize(token, epochId)).mul(weightOfStakableToken[token])).div(100));
-        }
+        // retrieve stable coins total staked in epoch
 
-        return size;
+        return _staking.getEpochPoolSize(address(_stakableToken), epochId);
     }
 
     function _getUserBalancePerEpoch(address userAddress, uint128 epochId) internal view returns (uint){
-        // retrieve normalised stable coins total staked per user in epoch
-        uint balance;
-        address token;
-        for (uint128 i = 1; i <= noOfStakableTokens; i++) {
-            token = stakableToken[i];
-            balance = balance.add(((_staking.getEpochUserBalance(userAddress, token, epochId)).mul(weightOfStakableToken[token])).div(100));
-        }
+        // retrieve stable coins total staked per user in epoch
 
-        return balance;
+        return _staking.getEpochUserBalance(userAddress, address(_stakableToken), epochId);
     }
 
     // compute epoch id from blocktimestamp and epochstart date
