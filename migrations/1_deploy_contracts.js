@@ -65,8 +65,8 @@ module.exports = async (deployer, network, accounts) => {
 
     console.log('VAULT_ADDRESS=' + Vault.address);
     console.log('STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
-    console.log('STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
-
+    console.log('STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));    
+    
     console.log('STAKING_SLICE=' + StakingInstanceSlice.address)
     console.log('STAKING_LP1=' + StakingInstanceLp1.address)
     console.log('STAKING_LP2=' + StakingInstanceLp2.address)
@@ -74,13 +74,9 @@ module.exports = async (deployer, network, accounts) => {
     console.log('YIELD_SLICE=' + YieldFarmInstanceSlice.address)
     console.log('YIELD_LP1=' + YieldFarmInstanceLp1.address)
     console.log('YIELD_LP2=' + YieldFarmInstanceLp2.address)
-
-    console.log('REACT_APP_STAKING_SLICE=' + StakingInstanceSlice.address)
-    console.log('REACT_APP_STAKING_LP1=' + StakingInstanceLp1.address)
-    console.log('REACT_APP_STAKING_LP2=' + StakingInstanceLp2.address)
-    console.log('REACT_APP_YIELD_SLICE=' + YieldFarmInstanceSlice.address)
-    console.log('REACT_APP_YIELD_LP1=' + YieldFarmInstanceLp1.address)
-    console.log('REACT_APP_YIELD_LP2=' + YieldFarmInstanceLp2.address)
+   
+    console.log('REACT_APP_STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
+    console.log('REACT_APP_STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
   }
 
 };
