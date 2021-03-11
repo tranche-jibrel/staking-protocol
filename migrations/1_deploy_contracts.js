@@ -41,40 +41,37 @@ module.exports = async (deployer, network, accounts) => {
 
     // slice deployment
     let StakingInstanceSlice = await deployProxy(StakingMilestones, [currentTime, 7200], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    let YieldFarmInstanceSlice = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    let YieldFarmInstanceSlice = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, SLICEAddress, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
     await SLICE.methods.transfer(Vault.address, toWei('5000')).send({ from: tokenOwner });
     await VaultInstance.setAllowance(YieldFarmInstanceSlice.address, toWei('5000'), { from: tokenOwner });
-    await YieldFarmInstanceSlice.addStakableToken(SLICEAddress, 100, { from: tokenOwner });
     await StakingInstanceSlice.manualEpochInit([SLICEAddress], 0, { from: tokenOwner });
 
     // LP1 deployment
     let StakingInstanceLp1 = await deployProxy(StakingMilestones, [currentTime, 7200], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    let YieldFarmInstanceLp1 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, Vault.address, toWei('200')], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    let YieldFarmInstanceLp1 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, LP1Address, Vault.address, toWei('200')], { from: tokenOwner, unsafeAllowCustomTypes: true });
     await SLICE.methods.transfer(Vault.address, toWei('5000')).send({ from: tokenOwner });
     await VaultInstance.setAllowance(YieldFarmInstanceLp1.address, toWei('5000'), { from: tokenOwner });
-    await YieldFarmInstanceLp1.addStakableToken(SLICEAddress, 100, { from: tokenOwner });
-    await StakingInstanceLp1.manualEpochInit([SLICEAddress], 0, { from: tokenOwner });
+    await StakingInstanceLp1.manualEpochInit([LP1Address], 0, { from: tokenOwner });
 
     //Lp2 deployment
     let StakingInstanceLp2 = await deployProxy(StakingMilestones, [currentTime, 7200], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    let YieldFarmInstanceLp2 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, Vault.address, toWei('300')], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    let YieldFarmInstanceLp2 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, LP2Address, Vault.address, toWei('300')], { from: tokenOwner, unsafeAllowCustomTypes: true });
     await SLICE.methods.transfer(Vault.address, toWei('5000')).send({ from: tokenOwner });
     await VaultInstance.setAllowance(YieldFarmInstanceLp2.address, toWei('5000'), { from: tokenOwner });
-    await YieldFarmInstanceLp2.addStakableToken(LP2Address, 100, { from: tokenOwner });
     await StakingInstanceLp2.manualEpochInit([LP2Address], 0, { from: tokenOwner });
 
     console.log('VAULT_ADDRESS=' + Vault.address);
     console.log('STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
-    console.log('STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));    
-    
+    console.log('STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
+
     console.log('STAKING_SLICE=' + StakingInstanceSlice.address)
     console.log('STAKING_LP1=' + StakingInstanceLp1.address)
     console.log('STAKING_LP2=' + StakingInstanceLp2.address)
-    
+
     console.log('YIELD_SLICE=' + YieldFarmInstanceSlice.address)
     console.log('YIELD_LP1=' + YieldFarmInstanceLp1.address)
     console.log('YIELD_LP2=' + YieldFarmInstanceLp2.address)
-   
+
     console.log('REACT_APP_STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
     console.log('REACT_APP_STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
   }
