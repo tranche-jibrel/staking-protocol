@@ -70,10 +70,17 @@ module.exports = async (deployer, network, accounts) => {
     console.log('STAKING_SLICE=' + StakingInstanceSlice.address)
     console.log('STAKING_LP1=' + StakingInstanceLp1.address)
     console.log('STAKING_LP2=' + StakingInstanceLp2.address)
-
+    
     console.log('YIELD_SLICE=' + YieldFarmInstanceSlice.address)
     console.log('YIELD_LP1=' + YieldFarmInstanceLp1.address)
     console.log('YIELD_LP2=' + YieldFarmInstanceLp2.address)
+
+    console.log('REACT_APP_STAKING_SLICE=' + StakingInstanceSlice.address)
+    console.log('REACT_APP_STAKING_LP1=' + StakingInstanceLp1.address)
+    console.log('REACT_APP_STAKING_LP2=' + StakingInstanceLp2.address)
+    console.log('REACT_APP_YIELD_SLICE=' + YieldFarmInstanceSlice.address)
+    console.log('REACT_APP_YIELD_LP1=' + YieldFarmInstanceLp1.address)
+    console.log('REACT_APP_YIELD_LP2=' + YieldFarmInstanceLp2.address)
   }
 
 };
