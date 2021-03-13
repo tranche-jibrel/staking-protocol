@@ -22,6 +22,19 @@ module.exports = {
       skipDryRun: true
     }
   },
+  mainnet: {
+    provider: () =>
+      new HDWalletProvider(
+        process.env.mnemonic,
+        `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`
+      ),
+    network_id: 1,
+    gas: 5500000,
+    gasPrice: 65000000000,
+    timeoutBlocks: 200,
+    confirmations: 2,
+    skipDryRun: true
+  },
   // Set default mocha options here, use special reporters etc.
   mocha: {
     timeout: 100000
