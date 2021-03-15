@@ -192,6 +192,11 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         }
     }
 
+    function initEpoch(uint128 epochId) external {
+        require(_getEpochId() > epochId, "This epoch is in the future");
+        _initEpoch(epochId);
+    }
+
     // internal methods
 
     function _initEpoch(uint128 epochId) internal {
