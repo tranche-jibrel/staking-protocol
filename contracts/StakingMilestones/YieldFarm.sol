@@ -132,6 +132,19 @@ contract YieldFarm is OwnableUpgradeSafe {
         }
     }
 
+    function initEpoch(uint128 epochId) external {
+        require(_getEpochId() > epochId, "This epoch is in the future");
+        require(lastInitializedEpoch.add(1) == epochId, "Epoch can be init only in order");
+
+        lastInitializedEpoch = epochId;
+
+        if (totalRewardInEpoch[epochId] == 0) {
+            totalRewardInEpoch[epochId] = totalRewardInEpoch[uint128(epochId.sub(1))];
+        }
+        // call the staking smart contract to init the epoch
+        epochs[epochId] = _getPoolSize(epochId);
+    }
+
     // internal methods
 
     function _initEpoch(uint128 epochId) internal {
