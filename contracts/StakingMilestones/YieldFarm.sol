@@ -49,7 +49,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         address stakableToken,
         address vault,
         uint _totalRewardInEpoch
-    ) public initializer {
+    ) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
         _stakableToken = IERC20(stakableToken);

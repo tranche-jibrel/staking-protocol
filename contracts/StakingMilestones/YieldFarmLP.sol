@@ -54,7 +54,7 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         address stakeContract,
         address vault,
         uint _totalRewardInEpoch
-    ) public initializer {
+    ) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
         totalRewardInEpoch[1] = _totalRewardInEpoch;
@@ -88,17 +88,17 @@ contract YieldFarmLP is OwnableUpgradeSafe {
 
         delete weightOfStakableToken[_tokenAddress];
 
-        uint128 index;
+        uint128 i;
 
-        for (uint128 i = 1; i <= noOfStakableTokens; i++) {
-            if (stakableToken[i] == _tokenAddress) index = i;
+        for (i = 1; i <= noOfStakableTokens; i++) {
+            if (stakableToken[i] == _tokenAddress) break;
         }
 
-        for (uint128 j = index; j <= noOfStakableTokens; j++) {
+        for (uint128 j = i; j <= noOfStakableTokens; j++) {
             if (j != noOfStakableTokens) {
                 stakableToken[j] = stakableToken[uint128(j.add(1))];
             } else {
-                delete stakableToken[j];
+                stakableToken[j] = address(0);
             }
         }
 

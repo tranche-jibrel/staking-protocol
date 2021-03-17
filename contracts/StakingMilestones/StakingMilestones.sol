@@ -52,7 +52,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     event ManualEpochInit(address indexed caller, uint128 indexed epochId, address[] tokens);
     event EmergencyWithdraw(address indexed user, address indexed tokenAddress, uint256 amount);
 
-    function initialize (uint256 _epoch1Start, uint256 _epochDuration) public initializer {
+    function initialize (uint256 _epoch1Start, uint256 _epochDuration) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         __ReentrancyGuard_init_unchained();
         epoch1Start = _epoch1Start;
@@ -62,7 +62,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     /*
      * Stores `amount` of `tokenAddress` tokens for the `user` into the vault
      */
-    function deposit(address tokenAddress, uint256 amount) public nonReentrant {
+    function deposit(address tokenAddress, uint256 amount) external nonReentrant {
         require(amount > 0, "Staking: Amount must be > 0");
 
         IERC20 token = IERC20(tokenAddress);
@@ -153,7 +153,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     /*
      * Removes the deposit of the user and sends the amount of `tokenAddress` back to the `user`
      */
-    function withdraw(address tokenAddress, uint256 amount) public nonReentrant {
+    function withdraw(address tokenAddress, uint256 amount) external nonReentrant {
         require(balances[msg.sender][tokenAddress] >= amount, "Staking: balance too small");
 
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].sub(amount);
@@ -262,7 +262,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         emit ManualEpochInit(msg.sender, epochId, tokens);
     }
 
-    function emergencyWithdraw(address tokenAddress) public nonReentrant {
+    function emergencyWithdraw(address tokenAddress) external nonReentrant {
         require(getCurrentEpoch().sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
@@ -313,7 +313,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     /*
      * Returns the amount of `token` that the `user` has currently staked
      */
-    function balanceOf(address user, address token) public view returns (uint256) {
+    function balanceOf(address user, address token) external view returns (uint256) {
         return balances[user][token];
     }
 
@@ -331,7 +331,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     /*
      * Returns the total amount of `tokenAddress` that was locked from beginning to end of epoch identified by `epochId`
      */
-    function getEpochPoolSize(address tokenAddress, uint128 epochId) public view returns (uint256) {
+    function getEpochPoolSize(address tokenAddress, uint128 epochId) external view returns (uint256) {
         // Premises:
         // 1. it's impossible to have gaps of uninitialized epochs
         // - any deposit or withdraw initialize the current epoch which requires the previous one to be initialized

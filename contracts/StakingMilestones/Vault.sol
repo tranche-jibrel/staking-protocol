@@ -18,7 +18,7 @@ contract Vault is OwnableUpgradeSafe {
 
     event SetAllowance(address indexed caller, address indexed spender, uint256 amount);
 
-    function setAllowance(address spender, uint amount) public onlyOwner {
+    function setAllowance(address spender, uint amount) external onlyOwner {
         SafeERC20.safeApprove(SLICE, spender, amount);
 
         emit SetAllowance(msg.sender, spender, amount);
