@@ -65,21 +65,21 @@ module.exports = async (deployer, network, accounts) => {
       let VaultInstance = await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
   
       // slice deployment
-      let StakingInstanceSlice = await deployProxy(StakingMilestones, [1615960800, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
+      let StakingInstanceSlice = await deployProxy(StakingMilestones, [1615968000, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
       let YieldFarmInstanceSlice = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, SLICEAddress, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
       await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
       await VaultInstance.setAllowance(YieldFarmInstanceSlice.address, toWei(EPOCH_REWARD), { from: tokenOwner });
       await StakingInstanceSlice.manualEpochInit([SLICEAddress], 0, { from: tokenOwner });
   
       // // LP1 deployment
-      let StakingInstanceLp1 = await deployProxy(StakingMilestones, [1615960800, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
+      let StakingInstanceLp1 = await deployProxy(StakingMilestones, [1615968000, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
       let YieldFarmInstanceLp1 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceLp1.address, LP1Address, Vault.address, toWei('200')], { from: tokenOwner, unsafeAllowCustomTypes: true });
       await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
       await VaultInstance.setAllowance(YieldFarmInstanceLp1.address, toWei(EPOCH_REWARD), { from: tokenOwner });
       await StakingInstanceLp1.manualEpochInit([LP1Address], 0, { from: tokenOwner });
   
       //Lp2 deployment
-      let StakingInstanceLp2 = await deployProxy(StakingMilestones, [1615960800, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
+      let StakingInstanceLp2 = await deployProxy(StakingMilestones, [1615968000, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
       let YieldFarmInstanceLp2 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceLp2.address, LP2Address, Vault.address, toWei('300')], { from: tokenOwner, unsafeAllowCustomTypes: true });
       await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
       await VaultInstance.setAllowance(YieldFarmInstanceLp2.address, toWei(EPOCH_REWARD), { from: tokenOwner });

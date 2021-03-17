@@ -972,6 +972,148 @@
           }
         }
       }
+    },
+    "c2bca90793c05be7cb2822eeb862edae7ceacd70a1312e418f5d6ac096348679": {
+      "address": "0xCC16aa82B84d586E8010803380d28983C7B2C522",
+      "txHash": "0x87881f4743e257b5d5f361d025cb645d1a4322e850de52696b3af304f07f4a51",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:61"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\GSN\\Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:78"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_vault",
+            "type": "t_address",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:19"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_slice",
+            "type": "t_contract(IERC20)4998",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:20"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_stakableToken",
+            "type": "t_contract(IERC20)4998",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:21"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_staking",
+            "type": "t_contract(IStakingMilestones)742",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:22"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochs",
+            "type": "t_mapping(t_uint128,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:25"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "totalRewardInEpoch",
+            "type": "t_mapping(t_uint128,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:27"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "totalRewardsDistributed",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:29"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "lastInitializedEpoch",
+            "type": "t_uint128",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:32"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "lastEpochIdHarvested",
+            "type": "t_mapping(t_address,t_uint128)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:35"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochDuration",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:36"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochStart",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:37"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(IERC20)4998": {
+            "label": "contract IERC20"
+          },
+          "t_contract(IStakingMilestones)742": {
+            "label": "contract IStakingMilestones"
+          },
+          "t_mapping(t_uint128,t_uint256)": {
+            "label": "mapping(uint128 => uint256)"
+          },
+          "t_uint128": {
+            "label": "uint128"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint128)": {
+            "label": "mapping(address => uint128)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   },
   "admin": {
