@@ -473,7 +473,7 @@ describe("YieldFarmLP", function () {
         this.yieldFarm.harvest(1, {
           from: user2
         }),
-        "ERC20: transfer amount exceeds allowance"
+        "SafeERC20: low-level call failed"
       );
     });
   });
@@ -700,7 +700,7 @@ describe("YieldFarmLP", function () {
         this.yieldFarm.massHarvest({
           from: user2
         }),
-        "ERC20: transfer amount exceeds allowance"
+        "SafeERC20: low-level call failed"
       );
     });
   });
