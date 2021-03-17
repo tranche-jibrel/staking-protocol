@@ -1114,6 +1114,318 @@
           }
         }
       }
+    },
+    "64634cd9b71dd45814e97ff2e395465643c1ebd2417301e3c8fd223e6b0ec3d1": {
+      "address": "0xa1B54dfe0CdaD83E0D10aC54953832ca41C7774D",
+      "txHash": "0x6ef7c906bb56b4c888aab53119e27683f74317ddfbe9ae801a1c9d7ffc820738",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:61"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeSafe",
+            "label": "_notEntered",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\ReentrancyGuard.sol:21"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\utils\\ReentrancyGuard.sol:63"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\GSN\\Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:78"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "epoch1Start",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:21"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "epochDuration",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:24"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:27"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "poolSize",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Pool)780_storage))",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:35"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "balanceCheckpoints",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_array(t_struct(Checkpoint)795_storage)dyn_storage))",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:46"
+          },
+          {
+            "contract": "StakingMilestones",
+            "label": "lastWithdrawEpochId",
+            "type": "t_mapping(t_address,t_uint128)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\StakingMilestones.sol:48"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Pool)780_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct StakingMilestones.Pool))"
+          },
+          "t_mapping(t_uint256,t_struct(Pool)780_storage)": {
+            "label": "mapping(uint256 => struct StakingMilestones.Pool)"
+          },
+          "t_struct(Pool)780_storage": {
+            "label": "struct StakingMilestones.Pool",
+            "members": [
+              {
+                "label": "size",
+                "type": "t_uint256"
+              },
+              {
+                "label": "set",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_array(t_struct(Checkpoint)795_storage)dyn_storage))": {
+            "label": "mapping(address => mapping(address => struct StakingMilestones.Checkpoint[]))"
+          },
+          "t_mapping(t_address,t_array(t_struct(Checkpoint)795_storage)dyn_storage)": {
+            "label": "mapping(address => struct StakingMilestones.Checkpoint[])"
+          },
+          "t_array(t_struct(Checkpoint)795_storage)dyn_storage": {
+            "label": "struct StakingMilestones.Checkpoint[]"
+          },
+          "t_struct(Checkpoint)795_storage": {
+            "label": "struct StakingMilestones.Checkpoint",
+            "members": [
+              {
+                "label": "epochId",
+                "type": "t_uint128"
+              },
+              {
+                "label": "multiplier",
+                "type": "t_uint128"
+              },
+              {
+                "label": "startBalance",
+                "type": "t_uint256"
+              },
+              {
+                "label": "newDeposits",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_uint128": {
+            "label": "uint128"
+          },
+          "t_mapping(t_address,t_uint128)": {
+            "label": "mapping(address => uint128)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "84be58e75798240f54c212029b2945b455416ecea154819ee1c223aa854f22da": {
+      "address": "0x34D2f5A45c0559d288C527E246a4914FF86187b5",
+      "txHash": "0xc80ebaddfdfcebc2e741dcbaf072f72df9e9a3f842c264ee8261f8d30381bc89",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\Initializable.sol:61"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\GSN\\Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "..\\@openzeppelin\\contracts-ethereum-package\\contracts\\access\\Ownable.sol:78"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_vault",
+            "type": "t_address",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:20"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_slice",
+            "type": "t_contract(IERC20)5012",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:21"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_stakableToken",
+            "type": "t_contract(IERC20)5012",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:22"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "_staking",
+            "type": "t_contract(IStakingMilestones)742",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:23"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochs",
+            "type": "t_mapping(t_uint128,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:26"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "totalRewardInEpoch",
+            "type": "t_mapping(t_uint128,t_uint256)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:28"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "totalRewardsDistributed",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:30"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "lastInitializedEpoch",
+            "type": "t_uint128",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:33"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "lastEpochIdHarvested",
+            "type": "t_mapping(t_address,t_uint128)",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:36"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochDuration",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:37"
+          },
+          {
+            "contract": "YieldFarm",
+            "label": "epochStart",
+            "type": "t_uint256",
+            "src": "..\\..\\..\\..\\..\\..\\C\\Users\\saurabh\\code\\Jibrel\\staking-protocol\\contracts\\StakingMilestones\\YieldFarm.sol:38"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(IERC20)5012": {
+            "label": "contract IERC20"
+          },
+          "t_contract(IStakingMilestones)742": {
+            "label": "contract IStakingMilestones"
+          },
+          "t_mapping(t_uint128,t_uint256)": {
+            "label": "mapping(uint128 => uint256)"
+          },
+          "t_uint128": {
+            "label": "uint128"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint128)": {
+            "label": "mapping(address => uint128)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   },
   "admin": {
