@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 
 contract Vault is OwnableUpgradeSafe {
@@ -18,7 +19,7 @@ contract Vault is OwnableUpgradeSafe {
     event SetAllowance(address indexed caller, address indexed spender, uint256 amount);
 
     function setAllowance(address spender, uint amount) public onlyOwner {
-        SLICE.approve(spender, amount);
+        SafeERC20.safeApprove(SLICE, spender, amount);
 
         emit SetAllowance(msg.sender, spender, amount);
     }

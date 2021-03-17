@@ -6,6 +6,8 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+
 
 contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
@@ -69,7 +71,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
 
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].add(amount);
 
-        token.transferFrom(msg.sender, address(this), amount);
+        SafeERC20.safeTransferFrom(token, msg.sender, address(this), amount);
 
         // epoch logic
         uint128 currentEpoch = getCurrentEpoch();
@@ -157,7 +159,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         balances[msg.sender][tokenAddress] = balances[msg.sender][tokenAddress].sub(amount);
 
         IERC20 token = IERC20(tokenAddress);
-        token.transfer(msg.sender, amount);
+        SafeERC20.safeTransfer(token, msg.sender, amount);
 
         // epoch logic
         uint128 currentEpoch = getCurrentEpoch();
@@ -260,7 +262,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         emit ManualEpochInit(msg.sender, epochId, tokens);
     }
 
-    function emergencyWithdraw(address tokenAddress) public {
+    function emergencyWithdraw(address tokenAddress) public nonReentrant {
         require(getCurrentEpoch().sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
@@ -269,7 +271,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         balances[msg.sender][tokenAddress] = 0;
 
         IERC20 token = IERC20(tokenAddress);
-        token.transfer(msg.sender, totalUserBalance);
+        SafeERC20.safeTransfer(token, msg.sender, totalUserBalance);
 
         emit EmergencyWithdraw(msg.sender, tokenAddress, totalUserBalance);
     }

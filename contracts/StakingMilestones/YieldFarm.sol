@@ -5,6 +5,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "./IStakingMilestones.sol";
 
 
@@ -82,7 +83,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);
 
         if (totalDistributedValue > 0) {
-            _slice.transferFrom(_vault, msg.sender, totalDistributedValue);
+            SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, totalDistributedValue);
         }
 
         return totalDistributedValue;
@@ -94,7 +95,7 @@ contract YieldFarm is OwnableUpgradeSafe {
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
         uint userReward = _harvest(epochId);
         if (userReward > 0) {
-            _slice.transferFrom(_vault, msg.sender, userReward);
+            SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, userReward);
         }
         emit Harvest(msg.sender, epochId, userReward);
         return userReward;
