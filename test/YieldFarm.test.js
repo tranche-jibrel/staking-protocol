@@ -19,9 +19,10 @@ describe("YieldFarm", function () {
 
   const epochRewardCap = web3.utils.toWei((1000).toString(), "ether");
   var startTime;
+  var currentTime;
 
   beforeEach(async function () {
-    const currentTime = await time.latest();
+    currentTime = await time.latest();
     startTime = Number(currentTime) + Number(time.duration.minutes(5));
 
     this.slice = await Token.new({
@@ -265,7 +266,7 @@ describe("YieldFarm", function () {
         this.yieldFarm.harvest(1, {
           from: user2
         }),
-        "ERC20: transfer amount exceeds allowance"
+        "SafeERC20: low-level call failed"
       );
     });
   });
@@ -327,7 +328,7 @@ describe("YieldFarm", function () {
 
     it("Should massHarvest for user1 after epoch 1", async function () {
       const epoch1 =
-        Number(await time.latest()) + Number(time.duration.minutes(6));
+        Number(currentTime) + Number(time.duration.minutes(6));
       await time.increaseTo(epoch1);
 
       await this.yieldFarm.massHarvest({ from: user1 });
@@ -340,7 +341,7 @@ describe("YieldFarm", function () {
 
     it("Should massHarvest for user2 after epoch 1", async function () {
       const epoch1 =
-        Number(await time.latest()) + Number(time.duration.minutes(6));
+        Number(currentTime) + Number(time.duration.minutes(6));
       await time.increaseTo(epoch1);
 
       await this.yieldFarm.massHarvest({ from: user2 });
@@ -353,7 +354,7 @@ describe("YieldFarm", function () {
 
     it("Should massHarvest for user1 after epoch 2", async function () {
       const epoch2 =
-        Number(await time.latest()) + Number(time.duration.minutes(7));
+        Number(currentTime) + Number(time.duration.minutes(7));
       await time.increaseTo(epoch2);
 
       await this.yieldFarm.massHarvest({ from: user1 });
@@ -366,7 +367,7 @@ describe("YieldFarm", function () {
 
     it("Should massHarvest for user2 after epoch 2", async function () {
       const epoch2 =
-        Number(await time.latest()) + Number(time.duration.minutes(7));
+        Number(currentTime) + Number(time.duration.minutes(7));
       await time.increaseTo(epoch2);
 
       await this.yieldFarm.massHarvest({ from: user2 });
@@ -379,7 +380,7 @@ describe("YieldFarm", function () {
 
     it("Should not massHarvest for epoch if SLICE allowance is less than the reward", async function () {
       const epoch2 =
-        Number(await time.latest()) + Number(time.duration.minutes(7));
+        Number(currentTime) + Number(time.duration.minutes(7));
       await time.increaseTo(epoch2);
       await this.vault.setAllowance(
         this.yieldFarm.address,
@@ -391,7 +392,87 @@ describe("YieldFarm", function () {
         this.yieldFarm.massHarvest({
           from: user2
         }),
-        "ERC20: transfer amount exceeds allowance"
+        "SafeERC20: low-level call failed"
+      );
+    });
+  });
+
+  describe("initEpoch()", function () {
+    beforeEach(async function () {
+      await this.staking.setEpochPoolSize(
+        this.dai.address,
+        1,
+        web3.utils.toWei((40).toString(), "ether")
+      );
+
+      await this.staking.setEpochPoolSize(
+        this.dai.address,
+        2,
+        web3.utils.toWei((80).toString(), "ether")
+      );
+
+      await this.staking.setEpochPoolSize(
+        this.dai.address,
+        3,
+        web3.utils.toWei((100).toString(), "ether")
+      );
+    });
+
+    it("Should initialize epoch1 to epoch5", async function () {
+      const epoch =
+        Number(currentTime) + Number(time.duration.minutes(10));
+      await time.increaseTo(epoch);
+
+      await this.yieldFarm.initEpoch(1, { from: user1 });
+
+      await this.yieldFarm.initEpoch(2, { from: user2 });
+
+      var reward = await this.yieldFarm.totalRewardInEpoch(2);
+      expect(reward).to.be.bignumber.equal(epochRewardCap);
+
+      await this.yieldFarm.initEpoch(3, { from: owner });
+
+      reward = await this.yieldFarm.totalRewardInEpoch(3);
+      expect(reward).to.be.bignumber.equal(epochRewardCap);
+
+      await this.yieldFarm.initEpoch(4, { from: owner });
+
+      reward = await this.yieldFarm.totalRewardInEpoch(4);
+      expect(reward).to.be.bignumber.equal(epochRewardCap);
+
+      reward = await this.yieldFarm.totalRewardInEpoch(5);
+      expect(reward).to.be.bignumber.equal(new BN(0).toString());
+      
+      await this.yieldFarm.initEpoch(5, { from: owner });
+
+      reward = await this.yieldFarm.totalRewardInEpoch(5);
+      expect(reward).to.be.bignumber.equal(epochRewardCap);
+    });
+
+    it("Should not initialize epoch 2 before epoch 1", async function () {
+      const epoch =
+        Number(currentTime) + Number(time.duration.minutes(7));
+      await time.increaseTo(epoch);
+
+      await expectRevert(
+        this.yieldFarm.initEpoch(2, { from: user2 }),
+        "Epoch can be init only in order"
+      );
+    });
+
+    it("Should not initialize epoch which is ongoing or in the future", async function () {
+      const epoch =
+        Number(currentTime) + Number(time.duration.minutes(7));
+      await time.increaseTo(epoch);
+
+      await expectRevert(
+        this.yieldFarm.initEpoch(3, { from: user2 }),
+        "This epoch is in the future"
+      );
+
+      await expectRevert(
+        this.yieldFarm.initEpoch(5, { from: user2 }),
+        "This epoch is in the future"
       );
     });
   });

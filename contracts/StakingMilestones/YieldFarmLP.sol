@@ -5,6 +5,7 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "./IStakingMilestones.sol";
 
 
@@ -53,7 +54,7 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         address stakeContract,
         address vault,
         uint _totalRewardInEpoch
-    ) public initializer {
+    ) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
         totalRewardInEpoch[1] = _totalRewardInEpoch;
@@ -87,17 +88,17 @@ contract YieldFarmLP is OwnableUpgradeSafe {
 
         delete weightOfStakableToken[_tokenAddress];
 
-        uint128 index;
+        uint128 i;
 
-        for (uint128 i = 1; i <= noOfStakableTokens; i++) {
-            if (stakableToken[i] == _tokenAddress) index = i;
+        for (i = 1; i <= noOfStakableTokens; i++) {
+            if (stakableToken[i] == _tokenAddress) break;
         }
 
-        for (uint128 j = index; j <= noOfStakableTokens; j++) {
+        for (uint128 j = i; j <= noOfStakableTokens; j++) {
             if (j != noOfStakableTokens) {
                 stakableToken[j] = stakableToken[uint128(j.add(1))];
             } else {
-                delete stakableToken[j];
+                stakableToken[j] = address(0);
             }
         }
 
@@ -129,7 +130,7 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);
 
         if (totalDistributedValue > 0) {
-            _slice.transferFrom(_vault, msg.sender, totalDistributedValue);
+            SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, totalDistributedValue);
         }
 
         return totalDistributedValue;
@@ -141,7 +142,7 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
         uint userReward = _harvest(epochId);
         if (userReward > 0) {
-            _slice.transferFrom(_vault, msg.sender, userReward);
+            SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, userReward);
         }
         emit Harvest(msg.sender, epochId, userReward);
         return userReward;
@@ -190,6 +191,11 @@ contract YieldFarmLP is OwnableUpgradeSafe {
                 .mul(((_staking.getEpochUserBalance(user, token, i)).mul(weightOfStakableToken[token])).div(100))
                 .div(_getPoolSize(i)));
         }
+    }
+
+    function initEpoch(uint128 epochId) external {
+        require(_getEpochId() > epochId, "This epoch is in the future");
+        _initEpoch(epochId);
     }
 
     // internal methods
