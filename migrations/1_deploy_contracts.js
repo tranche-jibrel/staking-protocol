@@ -6,8 +6,9 @@ var YieldFarm = artifacts.require('./StakingMilestones/YieldFarm.sol');
 
 module.exports = async (deployer, network, accounts) => {
 
-  if (network == 'kovan') {
+  if (network == 'mainnet') {
     let { SLICEAddress, LP1Address, LP2Address, EPOCH_DURATION, EPOCH_REWARD, EPOCH_START_TIME } = process.env;
+    console.log(SLICEAddress, LP1Address, LP2Address, EPOCH_DURATION, EPOCH_REWARD, EPOCH_START_TIME);
     EPOCH_START_TIME = +EPOCH_START_TIME;
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
