@@ -1426,6 +1426,214 @@
           }
         }
       }
+    },
+    "af1de396794f4c9f3d5422c9552bce85dedaf9d1b5d533278e4cdf39c2925835": {
+      "address": "0xb9CB1FA992Da27846761Af67958b32Ef06a3B3f7",
+      "txHash": "0xe57435d3c97e83ec509b65c2c995e37564313f59bd692e7989f9d133e1f51227",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol:26"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol:61"
+          },
+          {
+            "contract": "ContextUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol:37"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol:18"
+          },
+          {
+            "contract": "OwnableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol:78"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "_balances",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:14"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "_totalSupply",
+            "type": "t_uint256",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:26"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "_name",
+            "type": "t_string_storage",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:28"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "_symbol",
+            "type": "t_string_storage",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:29"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "_decimals",
+            "type": "t_uint8",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:30"
+          },
+          {
+            "contract": "ERC20NonTransferrableUpgradeSafe",
+            "label": "__gap",
+            "type": "t_array(t_uint256)44_storage",
+            "src": "StakingMilestones/ERC20NonTransferrable.sol:298"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "_vault",
+            "type": "t_address",
+            "src": "StakingMilestones/StakingWithLockup.sol:17"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "_slice",
+            "type": "t_contract(IERC20)5936",
+            "src": "StakingMilestones/StakingWithLockup.sol:18"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "_stakableToken",
+            "type": "t_contract(IERC20)5936",
+            "src": "StakingMilestones/StakingWithLockup.sol:19"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "durations",
+            "type": "t_mapping(t_uint8,t_uint256)",
+            "src": "StakingMilestones/StakingWithLockup.sol:22"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "numDurations",
+            "type": "t_uint8",
+            "src": "StakingMilestones/StakingWithLockup.sol:24"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "percentageRewards",
+            "type": "t_mapping(t_uint8,t_uint256)",
+            "src": "StakingMilestones/StakingWithLockup.sol:26"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "rewardCapForDuration",
+            "type": "t_mapping(t_uint8,t_uint256)",
+            "src": "StakingMilestones/StakingWithLockup.sol:27"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "totalRewardsDistributedForDuration",
+            "type": "t_mapping(t_uint8,t_uint256)",
+            "src": "StakingMilestones/StakingWithLockup.sol:28"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "stakeCounter",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "StakingMilestones/StakingWithLockup.sol:37"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "stakingDetails",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(StakingDetails)2516_storage))",
+            "src": "StakingMilestones/StakingWithLockup.sol:38"
+          },
+          {
+            "contract": "StakingWithLockup",
+            "label": "totalRewardsDistributed",
+            "type": "t_uint256",
+            "src": "StakingMilestones/StakingWithLockup.sol:41"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_contract(IERC20)5936": {
+            "label": "contract IERC20"
+          },
+          "t_mapping(t_uint8,t_uint256)": {
+            "label": "mapping(uint8 => uint256)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(StakingDetails)2516_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct StakingWithLockup.StakingDetails))"
+          },
+          "t_mapping(t_uint256,t_struct(StakingDetails)2516_storage)": {
+            "label": "mapping(uint256 => struct StakingWithLockup.StakingDetails)"
+          },
+          "t_struct(StakingDetails)2516_storage": {
+            "label": "struct StakingWithLockup.StakingDetails",
+            "members": [
+              {
+                "label": "startTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "endTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "reward",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_array(t_uint256)44_storage": {
+            "label": "uint256[44]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   },
   "admin": {
