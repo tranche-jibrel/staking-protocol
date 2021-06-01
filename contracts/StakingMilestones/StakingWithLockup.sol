@@ -2,12 +2,12 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "./ERC20NonTransferrable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 
-contract StakingWithLockup is OwnableUpgradeSafe, ERC20UpgradeSafe {
+contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSafe {
 
     // lib
     using SafeMath for uint;
@@ -60,7 +60,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20UpgradeSafe {
     ) external initializer {
 
         OwnableUpgradeSafe.__Ownable_init();
-        ERC20UpgradeSafe.__ERC20_init(name, symbol);
+        ERC20NonTransferrableUpgradeSafe.__ERC20_init(name, symbol);
         
         require(rewardsForDuration.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
         require(rewardDurations.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
