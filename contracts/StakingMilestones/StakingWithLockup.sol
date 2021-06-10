@@ -42,7 +42,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
     // events
     event Staked(address indexed user, uint256 amount, uint256 startTime, uint256 endTime, uint256 counter, uint256 tokensMinted);
-    event Claimed(address indexed user, uint256 amount, uint256 reward, uint256 tokensBurned);
+    event Claimed(address indexed user, uint256 amount, uint256 reward, uint256 tokensBurned, unit256 counter);
     event RewardsSet(uint256[] rewards);
     event RewardCapsSet(uint256[] caps);
     event RewardDurationsSet(uint256[] _durations);
@@ -177,7 +177,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         SafeERC20.safeTransfer(_stakableToken, msg.sender, amount);
         SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, reward);
         
-        emit Claimed(msg.sender, amount, reward, amount.add(reward));
+        emit Claimed(msg.sender, amount, reward, amount.add(reward), counter);
     }
 
 }
