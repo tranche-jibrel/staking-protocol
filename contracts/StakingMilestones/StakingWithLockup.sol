@@ -26,12 +26,14 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
     mapping (uint8 => uint256) public percentageRewards; // Percentage yield corresponding to all reward durations. 100 = 1%, 10000 = 100%
     mapping (uint8 => uint256) public rewardCapForDuration; // Total reward we want to distribute corresponding to each duration
     mapping (uint8 => uint256) public totalRewardsDistributedForDuration; // Total reward distributed corresponding to each duration
+    mapping (uint8 => uint256) public totalTokensStakedInDuration; // Total tokens staked corresponding to each duration
 
     struct StakingDetails {
         uint256 startTime;
         uint256 amount;
         uint256 endTime;
         uint256 reward;
+        uint8 durationIndex;
     }
 
     mapping (address => uint256) public stakeCounter;
@@ -142,6 +144,9 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         details.endTime = block.timestamp.add(durations[durationIndex]);
         details.amount = stakeAmount;
         details.reward = reward;
+        details.durationIndex = durationIndex;
+
+        totalTokensStakedInDuration[durationIndex] = totalTokensStakedInDuration[durationIndex].add(stakeAmount);
 
         _mint(msg.sender, stakeAmount.add(reward));
 
@@ -167,9 +172,11 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
         uint256 reward = stakingDetails[msg.sender][counter].reward;
         uint256 amount = stakingDetails[msg.sender][counter].amount;
+        uint8 durationIndex = stakingDetails[msg.sender][counter].durationIndex;
 
         delete stakingDetails[msg.sender][counter];
 
+        totalTokensStakedInDuration[durationIndex] = totalTokensStakedInDuration[durationIndex].sub(amount);
         totalRewardsDistributed = totalRewardsDistributed.add(reward);
 
         _burn(msg.sender, amount.add(reward));
