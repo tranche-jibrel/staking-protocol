@@ -1,108 +1,90 @@
 require('dotenv').config();
-const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+
+const Web3 = require('web3');
+// Ganache UI on 8545
+const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+var StakingWithLockup = artifacts.require('./StakingMilestones/StakingWithLockup.sol');
 var Vault = artifacts.require('./StakingMilestones/Vault.sol');
-var StakingMilestones = artifacts.require('./StakingMilestones/StakingMilestones.sol');
-var YieldFarm = artifacts.require('./StakingMilestones/YieldFarm.sol');
-var ERC20 = artifacts.require('./test/myERC20.sol');
-var { abi } = require('../build/contracts/IERC20.json');
+var mySlice = artifacts.require('./test/MySlice.sol');
+var myDai = artifacts.require('./test/MyERC20.sol');
+
+const totalReward = "1000000";
 
 module.exports = async (deployer, network, accounts) => {
-  if (network == 'development') {
-    // let { SLICEAddress, LP1Address, LP2Address } = process.env;
+  if (network == "development") {
+    const tokenOwner = accounts[0];
+
+    const mySliceInstance = await deployProxy(mySlice, [1000000, "mySlice", "SLICE"], { from: tokenOwner });
+    console.log('mySlice Deployed: ', mySliceInstance.address);
+
+    const myDaiInstance = await deployProxy(myDai, [10000000, "myDai", "DAI"], { from: tokenOwner });
+    console.log('myDai Deployed: ', myDaiInstance.address);
+
+    const vaultInstance = await deployer.deploy(Vault, mySliceInstance.address, { from: tokenOwner });
+    console.log('Vault deployed: ' + vaultInstance.address)
+/*
+    const stakingLockupInstance = await deployProxy(StakingWithLockup, [
+      vaultInstance.address,
+      mySliceInstance.address,
+      myDai.address,
+      [1000, 2000, 3000], // 10%, 20%, 30%
+      [web3.utils.toWei('200000'), web3.utils.toWei('300000'), web3.utils.toWei('500000')],
+      ["15768000", "31536000", "63072000"], // 6 month, 1 year, 2 year
+      "SLICE STAKE",
+      "SLICE_STAKE"
+    ], { from: tokenOwner, unsafeAllowCustomTypes: true });
+*/
+    const stakingLockupInstance = await deployProxy(StakingWithLockup, [
+      vaultInstance.address,
+      mySliceInstance.address,
+      myDai.address,
+      [1000, 2000, 3000, 4000, 5000],
+        [
+          web3.utils.toWei((1).toString(), "ether"),
+          web3.utils.toWei((2).toString(), "ether"),
+          web3.utils.toWei((3).toString(), "ether"),
+          web3.utils.toWei((4).toString(), "ether"),
+          web3.utils.toWei((5).toString(), "ether")
+        ],
+        [10, 20, 30, 40, 50],
+        "Stake Token",
+        "STK",
+    ], { from: tokenOwner });
+
+    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
+
+    await vaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
+
+    await mySliceInstance.transfer(vaultInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
+
+  } else if (network == 'kovan') {
+    let { SLICEAddress, VAULT_ADDRESS, } = process.env;
+    let SLICE = new web3.eth.Contract(abi, SLICEAddress)
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
     const toWei = web3.utils.toWei;
 
-    let SLICEInstance = await deployer.deploy(ERC20, { from: tokenOwner });
-    let LPInstance = await deployer.deploy(ERC20, { from: tokenOwner });
-    SLICEInstance.initialize(1000000000, "Tranche Network", "SLICE", { from: tokenOwner })
-    LPInstance.initialize(1000000000, "LP Token", "SLICE", { from: tokenOwner })
-    await deployer.deploy(Vault, SLICEInstance.address, { from: tokenOwner });
-    // set Allowance
-    let StakingInstance = await deployProxy(StakingMilestones, [Date.now(), 3600], { from: tokenOwner, unsafeAllowCustomTypes: true });
-    let YieldFarmInstance = await deployProxy(YieldFarm, [SLICEInstance.address, StakingInstance.address, Vault.address, toWei('1000')], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
+    let VaultInstance = await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
+    console.log('VAULT=' + VaultInstance.address)
 
-    await YieldFarmInstance.addStakableToken(SLICEInstance.address, 200, { from: tokenOwner });
-    await YieldFarmInstance.addStakableToken(LP1Address, 100, { from: tokenOwner });
-    console.log('VAULT_ADDRESS=' + Vault.address);
-    console.log('STAKING_ADDRESS=' + StakingInstance.address);
-    console.log('STAKING_YIELD_ADDRESS=' + YieldFarmInstance.address);
-    console.log('REACT_APP_STAKING_ADDRESS=' + StakingInstance.address);
+    let stakingLockupInstance = await deployProxy(StakingWithLockup, [
+      VaultInstance.address,
+      SLICEAddress,
+      SLICEAddress,
+      [1000, 2000, 3000], // 10%, 20%, 30%
+      [toWei('200000'), toWei('300000'), toWei('500000')],
+      ["15768000", "31536000", "63072000"], // 6 month, 1 year, 2 year
+      "SLICE STAKE",
+      "SLICE_STAKE"
+    ], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
 
-  } else if (network == 'kovan') {
-    let { SLICEAddress, LP1Address, LP2Address, EPOCH_START_TIME, EPOCH_DURATION, EPOCH_REWARD, IS_UPGRADE, 
-      IS_STAKING_UPGRADE, IS_YIELD_UPGRADE, STAKING_SLICE, STAKING_LP1, STAKING_LP2, YIELD_SLICE, YIELD_LP1, YIELD_LP2 } = process.env;
-    const accounts = await web3.eth.getAccounts();
-    const tokenOwner = accounts[0];
+    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalReward), { from: tokenOwner });
 
-    if (IS_UPGRADE === 'true') {
-      console.log('Contracts are upgrading, process started: ')
-      console.log(`STAKING_SLICE=${STAKING_SLICE}`)
-      console.log(`STAKING_LP1=${STAKING_LP1}`)
-      console.log(`STAKING_LP2=${STAKING_LP2}`)
-      console.log(`YIELD_SLICE=${YIELD_SLICE}`)
-      console.log(`YIELD_LP1=${YIELD_LP1}`)
-      console.log(`YIELD_LP2=${YIELD_LP2}`)
-
-      if (IS_STAKING_UPGRADE == 'true') {
-        await upgradeProxy(STAKING_SLICE, StakingMilestones, { from: tokenOwner });
-        await upgradeProxy(STAKING_LP1, StakingMilestones, { from: tokenOwner });
-        await upgradeProxy(STAKING_LP2, StakingMilestones, { from: tokenOwner });
-        console.log('Staking contracts upgrade completed.')
-      }
-      if (IS_YIELD_UPGRADE == 'true') {
-        await upgradeProxy(YIELD_SLICE, YieldFarm, { from: tokenOwner });
-        await upgradeProxy(YIELD_LP1, YieldFarm, { from: tokenOwner });
-        await upgradeProxy(YIELD_LP2, YieldFarm, { from: tokenOwner });
-        console.log('YieldFarm contracts upgrade completed.')
-      }
-      console.log('Contracts are upgraded')
-    } else {
-      let SLICE = new web3.eth.Contract(abi, SLICEAddress)
-      const toWei = web3.utils.toWei;
-      // const currentTime = (Date.now() - Date.now() % 1000) / 1000;
-  
-      let VaultInstance = await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
-  
-      // slice deployment
-      let StakingInstanceSlice = await deployProxy(StakingMilestones, [EPOCH_START_TIME, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      let YieldFarmInstanceSlice = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceSlice.address, SLICEAddress, Vault.address, toWei('100')], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
-      await VaultInstance.setAllowance(YieldFarmInstanceSlice.address, toWei(EPOCH_REWARD), { from: tokenOwner });
-      await StakingInstanceSlice.manualEpochInit([SLICEAddress], 0, { from: tokenOwner });
-      await StakingInstanceSlice.manualEpochInit([SLICEAddress], 1, { from: tokenOwner });
-  
-      // // LP1 deployment
-      let StakingInstanceLp1 = await deployProxy(StakingMilestones, [EPOCH_START_TIME, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      let YieldFarmInstanceLp1 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceLp1.address, LP1Address, Vault.address, toWei('200')], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
-      await VaultInstance.setAllowance(YieldFarmInstanceLp1.address, toWei(EPOCH_REWARD), { from: tokenOwner });
-      await StakingInstanceLp1.manualEpochInit([LP1Address], 0, { from: tokenOwner });
-      await StakingInstanceLp1.manualEpochInit([LP1Address], 1, { from: tokenOwner });
-  
-      //Lp2 deployment
-      let StakingInstanceLp2 = await deployProxy(StakingMilestones, [EPOCH_START_TIME, EPOCH_DURATION], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      let YieldFarmInstanceLp2 = await deployProxy(YieldFarm, [SLICEAddress, StakingInstanceLp2.address, LP2Address, Vault.address, toWei('300')], { from: tokenOwner, unsafeAllowCustomTypes: true });
-      await SLICE.methods.transfer(Vault.address, toWei(EPOCH_REWARD)).send({ from: tokenOwner });
-      await VaultInstance.setAllowance(YieldFarmInstanceLp2.address, toWei(EPOCH_REWARD), { from: tokenOwner });
-      await StakingInstanceLp2.manualEpochInit([LP2Address], 0, { from: tokenOwner });
-      await StakingInstanceLp2.manualEpochInit([LP2Address], 1, { from: tokenOwner });
-  
-      console.log('VAULT_ADDRESS=' + Vault.address);
-      console.log('STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
-      console.log('STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
-  
-      console.log('STAKING_SLICE=' + StakingInstanceSlice.address)
-      console.log('STAKING_LP1=' + StakingInstanceLp1.address)
-      console.log('STAKING_LP2=' + StakingInstanceLp2.address)
-  
-      console.log('YIELD_SLICE=' + YieldFarmInstanceSlice.address)
-      console.log('YIELD_LP1=' + YieldFarmInstanceLp1.address)
-      console.log('YIELD_LP2=' + YieldFarmInstanceLp2.address)
-  
-      console.log('REACT_APP_STAKING_ADDRESS=' + [StakingInstanceSlice.address, StakingInstanceLp1.address, StakingInstanceLp2.address].join(','));
-      console.log('REACT_APP_STAKING_YIELD_ADDRESS=' + [YieldFarmInstanceSlice.address, YieldFarmInstanceLp1.address, YieldFarmInstanceLp2.address].join(','));
-    }
+    await SLICE.methods.transfer(Vault.address, toWei(totalReward)).send({ from: tokenOwner });
   }
 
 };
