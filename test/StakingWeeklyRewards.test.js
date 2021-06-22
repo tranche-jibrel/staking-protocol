@@ -488,7 +488,7 @@ describe("StakingWeeklyRewards", function () {
 
       var user1Reward = await this.stakingRewards.getTotalAccruedRewards(user1);
 
-      expect(user1Reward).to.be.bignumber.equal(new BN("9000"));
+      expect(user1Reward).to.be.bignumber.equal(new BN("3000"));
 
       const epoch13 = Number(startTime) + Number(time.duration.minutes(1));
 

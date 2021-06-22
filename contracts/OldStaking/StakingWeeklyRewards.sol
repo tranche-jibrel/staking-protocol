@@ -151,7 +151,7 @@ contract StakingWeeklyRewards is OwnableUpgradeSafe {
 
     }
 
-    function _calculateReward(uint128 epochId) internal returns (uint) {
+    function _calculateReward(uint128 epochId) internal view returns (uint) {
 
         uint reward = rewardPerTokenInEpoch[epochId]
             .mul(_getUserBalancePerEpoch(msg.sender, epochId)).div(1e18);

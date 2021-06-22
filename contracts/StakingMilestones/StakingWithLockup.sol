@@ -8,9 +8,10 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 
 
 contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSafe {
-
-    // lib
+     // lib
     using SafeMath for uint;
+
+    uint256 public constant PERCENT_DIVIDER = 10000;  // percentage divider
 
     // addreses
     // contracts
@@ -50,17 +51,14 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
     event RewardDurationsSet(uint256[] _durations);
 
     // constructor
-    function initialize(
-        address vault,
-        address slice,
-        address stakableToken,
-        uint256[] calldata rewardsForDuration,
-        uint256[] calldata rewardCapsForDuration,
-        uint256[] calldata rewardDurations,
-        string memory name,
-        string memory symbol
-    ) external initializer {
-
+    function initialize(address vault,
+            address slice,
+            address stakableToken,
+            uint256[] calldata rewardsForDuration,
+            uint256[] calldata rewardCapsForDuration,
+            uint256[] calldata rewardDurations,
+            string memory name,
+            string memory symbol) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         ERC20NonTransferrableUpgradeSafe.__ERC20_init(name, symbol);
         
@@ -85,15 +83,9 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
     }
 
-    function setRewardDetails
-        (
-            uint256[] calldata rewardDurations,
+    function setRewardDetails(uint256[] calldata rewardsForDuration,
             uint256[] calldata rewardCapsForDuration,
-            uint256[] calldata rewardsForDuration
-        )
-            external
-            onlyOwner
-        {
+            uint256[] calldata rewardDurations) external onlyOwner {
 
         require(rewardDurations.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
         require(rewardsForDuration.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
@@ -120,20 +112,14 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
                 "StakingWithLockup: Rewards allocated for this duration have been distributed");
 
         uint256 stakeAmount = amount;
-        uint256 reward = stakeAmount.mul(percentageRewards[durationIndex]).div(10000); // 10000 = 100%
+        uint256 reward = stakeAmount.mul(percentageRewards[durationIndex]).div(PERCENT_DIVIDER); // 10000 = 100%
 
         if (totalRewardsDistributedForDuration[durationIndex].add(reward) > rewardCapForDuration[durationIndex]) {
-            
             reward = rewardCapForDuration[durationIndex].sub(totalRewardsDistributedForDuration[durationIndex]);
-            
-            stakeAmount = reward.mul(10000).div(percentageRewards[durationIndex]);
-
+            stakeAmount = reward.mul(PERCENT_DIVIDER).div(percentageRewards[durationIndex]);
             totalRewardsDistributedForDuration[durationIndex] = rewardCapForDuration[durationIndex];
-        
         } else {
-
             totalRewardsDistributedForDuration[durationIndex] = totalRewardsDistributedForDuration[durationIndex].add(reward);
-        
         }
 
         stakeCounter[msg.sender] = stakeCounter[msg.sender].add(1);

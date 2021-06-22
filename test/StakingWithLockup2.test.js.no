@@ -80,145 +80,6 @@ contract("StakingWithLockup", function (accounts) {
     });
   });
 
-  
-  describe("deploy and initialize() other contracts", function () {
-    it("Should not initialize if array lengths are not equal", async function () {
-
-      this.stakingRewards1 = await stakingWithLockup.new({
-        from: owner
-      });
-
-      await expectRevert(
-        this.stakingRewards1.initialize(
-          vaultContract.address,
-          sliceContract.address,
-          sliceContract.address,
-          [100, 200, 300, 400, 500],
-          [1000, 2000, 3000, 4000, 5000],
-          [10, 20, 30, 40, 50, 60],
-          "Stake Token",
-          "STK",
-          {
-            from: owner
-          }),
-        "StakingWithLockup: Array lengths should be equal"
-      );
-
-      await expectRevert(
-        this.stakingRewards1.initialize(
-          vaultContract.address,
-          sliceContract.address,
-          sliceContract.address,
-          [100, 200, 300, 400, 500, 600],
-          [1000, 2000, 3000, 4000, 5000],
-          [10, 20, 30, 40, 50],
-          "Stake Token",
-          "STK",
-          {
-            from: owner
-          }),
-        "StakingWithLockup: Array lengths should be equal"
-      );
-    });
-
-  });
-
-  describe("stake()", function () {
-    beforeEach(async function () {
-      await daiContract.transfer(user1, web3.utils.toWei("100"), { from: owner });
-      await daiContract.transfer(user2, web3.utils.toWei("100"), { from: owner });
-      await daiContract.transfer(user3, web3.utils.toWei("100"), { from: owner });
-    });
-
-    it("Should stake for user1", async function () {
-     await daiContract.approve(stkLckpContract.address, web3.utils.toWei("1"), { from: user1 });
-
-     await stkLckpContract.stake(web3.utils.toWei("1"), 0, { from: user1 });
-
-     const balance = await daiContract.balanceOf(stkLckpContract.address);
-     expect(balance).to.be.bignumber.equal(web3.utils.toWei("1"));
-
-     const stakeTokenBalance = await stkLckpContract.balanceOf(user1);
-     expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("1.1")); // Stake Token minted = amount staked + reward calculated
-
-     var result = await stkLckpContract.stakingDetails(user1, 1);
-
-     expect(result.amount).to.be.bignumber.equal(web3.utils.toWei("1"));
-     expect(result.reward).to.be.bignumber.equal(web3.utils.toWei("0.1"));
-    });
-
-    it("Should stake for user2", async function () {
-      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("10"), { from: user2 });
-
-      await stkLckpContract.stake(web3.utils.toWei("10"), 1, { from: user2 });
-
-      const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("11"));
-
-      const stakeTokenBalance = await stkLckpContract.balanceOf(user2);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("12")); // Stake Token minted = amount staked + reward calculated
-
-      var result = await stkLckpContract.stakingDetails(user2, 1);
-
-      expect(result.amount).to.be.bignumber.equal(web3.utils.toWei("10"));
-      expect(result.reward).to.be.bignumber.equal(web3.utils.toWei("2"));
-    });
-
-    it("Should stake lesser amount if exceeding reward cap", async function () {
-      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("15"), { from: user2 });
-
-      await stkLckpContract.stake(web3.utils.toWei("15"), 2, { from: user2 });
-
-      const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("21"));
-
-      const stakeTokenBalance = await stkLckpContract.balanceOf(user2);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("25")); // Stake Token minted = amount staked + reward calculated
-
-      var result = await stkLckpContract.stakingDetails(user2, 2);
-
-      expect(result.amount).to.be.bignumber.equal(web3.utils.toWei("10"));
-      expect(result.reward).to.be.bignumber.equal(web3.utils.toWei("3"));
-    });
-
-    it("Should not stake if amount entered is 0", async function () {
-      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("10"), { from: user3 });
-
-      await expectRevert(
-        stkLckpContract.stake(
-          0,
-          1,
-          {
-            from: user3
-          }),
-        "StakingWithLockup: Cannot stake 0 tokens"
-      );
-    });
-
-    it("Should not stake if duration index entered is greater than or equal to numDurations", async function () {
-      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("10"), { from: user2 });
-
-      await expectRevert(
-        stkLckpContract.stake(
-          10,
-          5,
-          {
-            from: user2
-          }),
-        "StakingWithLockup: Please enter valid staking duration index"
-      );
-    });
-
-    it("Should not stake if reward cap has been met (rewards allocated for that duration have been distributed)", async function () {
-      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("10"), { from: user2 });
-
-      await expectRevert(stkLckpContract.stake(web3.utils.toWei("10"), 1, { from: user2 }), 
-        "StakingWithLockup: Rewards allocated for this duration have been distributed");
-
-    });
-
-  });
-
   describe("claim() and massClaim()", function () {
 
     beforeEach(async function () {
@@ -265,7 +126,7 @@ contract("StakingWithLockup", function (accounts) {
       // console.log("New Actual Block: " + block + ", new time: " + (await web3.eth.getBlock(block)).timestamp)
       
       var stakeTokenBalance = await stkLckpContract.balanceOf(user1);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("2.2"));
+      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("1.1"));
 
       // res = await stkLckpContract.stakingDetails(user1, 1)
       // console.log(res[0].toString(), res[1].toString(), res[2].toString(), res[3].toString(), res[4].toString())
@@ -274,10 +135,10 @@ contract("StakingWithLockup", function (accounts) {
       await stkLckpContract.claim(1, { from: user1 });
 
       stakeTokenBalance = await stkLckpContract.balanceOf(user1);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("1.1"));
+      expect(stakeTokenBalance).to.be.bignumber.equal(new BN("0"));
 
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("21"));
+      expect(balance).to.be.bignumber.equal(new BN("0"));
 
       const reward = await sliceContract.balanceOf(user1);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("0.1"));
@@ -294,15 +155,15 @@ contract("StakingWithLockup", function (accounts) {
       await timeMachine.advanceTimeAndBlock(maturity);
 
       var stakeTokenBalance = await stkLckpContract.balanceOf(user2);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("37"));
+      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("12"));
 
       await stkLckpContract.claim(1, { from: user2 });
 
       stakeTokenBalance = await stkLckpContract.balanceOf(user2);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("25"));
+      expect(stakeTokenBalance).to.be.bignumber.equal(new BN("0"));
 
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("21"));
+      expect(balance).to.be.bignumber.equal(new BN("0"));
 
       const reward = await sliceContract.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("2"));
@@ -327,7 +188,7 @@ contract("StakingWithLockup", function (accounts) {
       expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("6.5"));
       
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("26"));
+      expect(balance).to.be.bignumber.equal(web3.utils.toWei("5"));
 
       const reward = await sliceContract.balanceOf(user3);
       expect(reward).to.be.bignumber.equal(new BN("0"));
@@ -358,7 +219,7 @@ contract("StakingWithLockup", function (accounts) {
       );
       
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("26"));
+      expect(balance).to.be.bignumber.equal(web3.utils.toWei("5"));
 
       const reward = await sliceContract.balanceOf(user3);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("1.5"));
@@ -376,21 +237,21 @@ contract("StakingWithLockup", function (accounts) {
       
       await timeMachine.advanceTimeAndBlock(maturity);
       // console.log((await stkLckpContract.stakeCounter(user2)).toString())
-      await stkLckpContract.massClaim([4, 5, 6], { from: user2 });
+      await stkLckpContract.massClaim([2, 3, 4], { from: user2 });
 
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("26"));
+      expect(balance).to.be.bignumber.equal(web3.utils.toWei("5"));
 
       const reward = await sliceContract.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("8"));
 
-      var result = await stkLckpContract.stakingDetails(user2, 4);
+      var result = await stkLckpContract.stakingDetails(user2, 1);
       expect(result.amount).to.be.bignumber.equal(new BN("0"));
 
-      result = await stkLckpContract.stakingDetails(user2, 5);
+      result = await stkLckpContract.stakingDetails(user2, 2);
       expect(result.amount).to.be.bignumber.equal(new BN("0"));
 
-      result = await stkLckpContract.stakingDetails(user2, 6);
+      result = await stkLckpContract.stakingDetails(user2, 3);
       expect(result.amount).to.be.bignumber.equal(new BN("0"));
     });
 
@@ -403,48 +264,48 @@ contract("StakingWithLockup", function (accounts) {
       
       await timeMachine.advanceTimeAndBlock(maturity);
 
-      await stkLckpContract.claim(7, { from: user2 });
+      await stkLckpContract.claim(5, { from: user2 });
 
       await expectRevert(
-        stkLckpContract.massClaim([7, 8, 9], { from: user2 }),
+        stkLckpContract.massClaim([5, 6, 7], { from: user2 }),
         "StakingWithLockup: Stake does not exist"
       );
 
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("46"));
+      expect(balance).to.be.bignumber.equal(web3.utils.toWei("25"));
 
       const reward = await sliceContract.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("9"));
 
-      var result = await stkLckpContract.stakingDetails(user2, 7);
+      var result = await stkLckpContract.stakingDetails(user2, 5);
       expect(result.amount).to.be.bignumber.equal(new BN("0"));
 
-      result = await stkLckpContract.stakingDetails(user2, 8);
+      result = await stkLckpContract.stakingDetails(user2, 6);
       expect(result.amount).to.be.bignumber.equal(web3.utils.toWei("10"));
 
-      result = await stkLckpContract.stakingDetails(user2, 9);
+      result = await stkLckpContract.stakingDetails(user2, 7);
       expect(result.amount).to.be.bignumber.equal(web3.utils.toWei("10"));
     });
 
     it("Should not mass claim for user2 if maturity period is not over for at least one stake", async function () {
-      const maturity = Number(time.duration.seconds(51));
+      const maturity = Number(time.duration.seconds(55));
       
       await stkLckpContract.stake(web3.utils.toWei("10"), 0, { from: user2 });
       await stkLckpContract.stake(web3.utils.toWei("10"), 1, { from: user2 });
       await stkLckpContract.stake(web3.utils.toWei("10"), 2, { from: user2 });
-      console.log((await stkLckpContract.stakeCounter(user2)).toString())
+      
       await timeMachine.advanceTimeAndBlock(maturity);
 
       await expectRevert(
-        stkLckpContract.massClaim([10, 11, 12], { from: user2 }),
+        stkLckpContract.massClaim([8, 9, 10], { from: user2 }),
         "StakingWithLockup: Cannot claim reward before endTime"
       );
 
       var stakeTokenBalance = await stkLckpContract.balanceOf(user2);
-      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("86"));
+      expect(stakeTokenBalance).to.be.bignumber.equal(web3.utils.toWei("61"));
 
       const balance = await daiContract.balanceOf(stkLckpContract.address);
-      expect(balance).to.be.bignumber.equal(web3.utils.toWei("76"));
+      expect(balance).to.be.bignumber.equal(web3.utils.toWei("55"));
 
       const reward = await sliceContract.balanceOf(user2);
       expect(reward).to.be.bignumber.equal(web3.utils.toWei("9"));
@@ -584,6 +445,4 @@ contract("StakingWithLockup", function (accounts) {
       );
     });
   });
-
-
 });

@@ -9,3 +9,6 @@ dist/*
 Flatters.bat
 package-lock.json
 flatten/*
+coverage.json
+coverage/
+*.txt
