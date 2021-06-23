@@ -24,33 +24,33 @@ module.exports = async (deployer, network, accounts) => {
 
     const vaultInstance = await deployer.deploy(Vault, mySliceInstance.address, { from: tokenOwner });
     console.log('Vault deployed: ' + vaultInstance.address)
-/*
-    const stakingLockupInstance = await deployProxy(StakingWithLockup, [
-      vaultInstance.address,
-      mySliceInstance.address,
-      myDai.address,
-      [1000, 2000, 3000], // 10%, 20%, 30%
-      [web3.utils.toWei('200000'), web3.utils.toWei('300000'), web3.utils.toWei('500000')],
-      ["15768000", "31536000", "63072000"], // 6 month, 1 year, 2 year
-      "SLICE STAKE",
-      "SLICE_STAKE"
-    ], { from: tokenOwner, unsafeAllowCustomTypes: true });
-*/
+    /*
+        const stakingLockupInstance = await deployProxy(StakingWithLockup, [
+          vaultInstance.address,
+          mySliceInstance.address,
+          myDai.address,
+          [1000, 2000, 3000], // 10%, 20%, 30%
+          [web3.utils.toWei('200000'), web3.utils.toWei('300000'), web3.utils.toWei('500000')],
+          ["15768000", "31536000", "63072000"], // 6 month, 1 year, 2 year
+          "SLICE STAKE",
+          "SLICE_STAKE"
+        ], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    */
     const stakingLockupInstance = await deployProxy(StakingWithLockup, [
       vaultInstance.address,
       mySliceInstance.address,
       myDai.address,
       [1000, 2000, 3000, 4000, 5000],
-        [
-          web3.utils.toWei((1).toString(), "ether"),
-          web3.utils.toWei((2).toString(), "ether"),
-          web3.utils.toWei((3).toString(), "ether"),
-          web3.utils.toWei((4).toString(), "ether"),
-          web3.utils.toWei((5).toString(), "ether")
-        ],
-        [10, 20, 30, 40, 50],
-        "Stake Token",
-        "STK",
+      [
+        web3.utils.toWei((1).toString(), "ether"),
+        web3.utils.toWei((2).toString(), "ether"),
+        web3.utils.toWei((3).toString(), "ether"),
+        web3.utils.toWei((4).toString(), "ether"),
+        web3.utils.toWei((5).toString(), "ether")
+      ],
+      [10, 20, 30, 40, 50],
+      "Stake Token",
+      "STK",
     ], { from: tokenOwner });
 
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
@@ -85,6 +85,29 @@ module.exports = async (deployer, network, accounts) => {
     await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalReward), { from: tokenOwner });
 
     await SLICE.methods.transfer(Vault.address, toWei(totalReward)).send({ from: tokenOwner });
+  } else if (network == 'mainnet') {
+    let { SLICEAddress, VAULT_ADDRESS } = process.env;
+    const accounts = await web3.eth.getAccounts();
+    const tokenOwner = accounts[0];
+    const toWei = web3.utils.toWei;
+    console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
+    let reward1 = 1500000;
+    let reward2 = 1250000;
+    let reward3 = 1250000;
+    let totalRewards = reward1 + reward2 + reward3;
+    let stakingLockupInstance = await deployProxy(StakingWithLockup, [
+      VAULT_ADDRESS,
+      SLICEAddress,
+      SLICEAddress,
+      [833, 1250, 4000], // 10%, 25%, 40%
+      [toWei(reward1), toWei(reward2), toWei(reward3)],
+      ["2678400", "15768000", "31536000"], // 1 month, 6 month, 1 year
+      "SLICE STAKE",
+      "SLICE_STAKE"
+    ], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
+    let VaultInstance = await Vault.at(VAULT_ADDRESS);
+    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalRewards), { from: tokenOwner });
   }
 
 };
