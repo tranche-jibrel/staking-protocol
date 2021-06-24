@@ -73,12 +73,35 @@ module.exports = async (deployer, network, accounts) => {
       ["15768000", "31536000", "63072000"], // seconds in 6 month, 1 year, 2 year
       "SLICE STAKE",
       "SLICE_STAKE"
-    ], { from: tokenOwner, unsafeAllowCustomTypes: true });
+    ], { from: tokenOwner });
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
 
     await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalReward), { from: tokenOwner });
 
     await SLICE.methods.transfer(Vault.address, toWei(totalReward)).send({ from: tokenOwner });
+  } else if (network == 'mainnet') {
+    let { SLICEAddress, VAULT_ADDRESS } = process.env;
+    const accounts = await web3.eth.getAccounts();
+    const tokenOwner = accounts[0];
+    const toWei = web3.utils.toWei;
+    console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
+    let reward1 = 1500000;
+    let reward2 = 1250000;
+    let reward3 = 1250000;
+    let totalRewards = reward1 + reward2 + reward3;
+    let stakingLockupInstance = await deployProxy(StakingWithLockup, [
+      VAULT_ADDRESS,
+      SLICEAddress,
+      SLICEAddress,
+      [833, 1250, 4000], // 10%, 25%, 40%
+      [toWei(reward1), toWei(reward2), toWei(reward3)],
+      ["2678400", "15768000", "31536000"], // 1 month, 6 month, 1 year
+      "SLICE STAKE",
+      "SLICE_STAKE"
+    ], { from: tokenOwner });
+    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
+    let VaultInstance = await Vault.at(VAULT_ADDRESS);
+    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalRewards), { from: tokenOwner });
   }
 
 };
