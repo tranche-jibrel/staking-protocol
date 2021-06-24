@@ -224,7 +224,7 @@ contract("StakingWithLockup", function (accounts) {
     beforeEach(async function () {
 
       await stkLckpContract.setRewardDetails(
-        [1000, 2000, 3000, 4000, 5000],
+        [web3.utils.toWei("0.1"), web3.utils.toWei("0.2"), web3.utils.toWei("0.3"), web3.utils.toWei("0.4"), web3.utils.toWei("0.5")],
         [
           web3.utils.toWei("10"),
           web3.utils.toWei("20"),
@@ -245,9 +245,6 @@ contract("StakingWithLockup", function (accounts) {
       await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user1 });
       await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user2 });
       await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user3 });
-
-      // await vaultContract.setAllowance(stkLckpContract.address, web3.utils.toWei("1000"), { from: owner });
-
     });
 
     it("Should claim for user1", async function () {
@@ -432,7 +429,7 @@ contract("StakingWithLockup", function (accounts) {
       await stkLckpContract.stake(web3.utils.toWei("10"), 0, { from: user2 });
       await stkLckpContract.stake(web3.utils.toWei("10"), 1, { from: user2 });
       await stkLckpContract.stake(web3.utils.toWei("10"), 2, { from: user2 });
-      console.log((await stkLckpContract.stakeCounter(user2)).toString())
+      // console.log((await stkLckpContract.stakeCounter(user2)).toString())
       await timeMachine.advanceTimeAndBlock(maturity);
 
       await expectRevert(

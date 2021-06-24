@@ -36,21 +36,16 @@ module.exports = async (deployer, network, accounts) => {
       "SLICE_STAKE"
     ], { from: tokenOwner, unsafeAllowCustomTypes: true });
 */
+
     const stakingLockupInstance = await deployProxy(StakingWithLockup, [
       vaultInstance.address,
       mySliceInstance.address,
       myDai.address,
-      [1000, 2000, 3000, 4000, 5000],
-        [
-          web3.utils.toWei((1).toString(), "ether"),
-          web3.utils.toWei((2).toString(), "ether"),
-          web3.utils.toWei((3).toString(), "ether"),
-          web3.utils.toWei((4).toString(), "ether"),
-          web3.utils.toWei((5).toString(), "ether")
-        ],
-        [10, 20, 30, 40, 50],
-        "Stake Token",
-        "STK",
+      [web3.utils.toWei("0.1"), web3.utils.toWei("0.2"), web3.utils.toWei("0.3"),  web3.utils.toWei("0.4"), web3.utils.toWei("0.5")],
+      [web3.utils.toWei("1"), web3.utils.toWei("2"), web3.utils.toWei("3"), web3.utils.toWei("4"), web3.utils.toWei("5")],
+      [10, 20, 30, 40, 50],
+      "Stake Token",
+      "STK",
     ], { from: tokenOwner });
 
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
@@ -64,7 +59,6 @@ module.exports = async (deployer, network, accounts) => {
     let SLICE = new web3.eth.Contract(abi, SLICEAddress)
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
-    const toWei = web3.utils.toWei;
 
     console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
     let VaultInstance = await deployer.deploy(Vault, SLICEAddress, { from: tokenOwner });
@@ -74,9 +68,9 @@ module.exports = async (deployer, network, accounts) => {
       VaultInstance.address,
       SLICEAddress,
       SLICEAddress,
-      [1000, 2000, 3000], // 10%, 20%, 30%
-      [toWei('200000'), toWei('300000'), toWei('500000')],
-      ["15768000", "31536000", "63072000"], // 6 month, 1 year, 2 year
+      [web3.utils.toWei("0.1"), web3.utils.toWei("0.2"), web3.utils.toWei("0.3")], // 10%, 20%, 30% scaled by 1e18
+      [web3.utils.toWei('200000'), web3.utils.toWei('300000'), web3.utils.toWei('500000')],
+      ["15768000", "31536000", "63072000"], // seconds in 6 month, 1 year, 2 year
       "SLICE STAKE",
       "SLICE_STAKE"
     ], { from: tokenOwner, unsafeAllowCustomTypes: true });
