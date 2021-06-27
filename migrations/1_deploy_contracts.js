@@ -7,7 +7,6 @@ var mySlice = artifacts.require('./test/MySlice.sol');
 var myDai = artifacts.require('./test/MyERC20.sol');
 
 const totalReward = "1000000000";
-
 module.exports = async (deployer, network, accounts) => {
   if (network == "development") {
     const tokenOwner = accounts[0];
@@ -58,15 +57,15 @@ module.exports = async (deployer, network, accounts) => {
       VAULT_ADDRESS,
       SLICEAddress,
       SLICEAddress,
-      web3.utils.toWei("0.8333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4"),
-      [web3.utils.toWei('1000'), web3.utils.toWei('2000'), web3.utils.toWei('2000')],
-      ["120", "300", "31536000"], // 1 month, 6 month, 1 year
-      "SLICE STAKE_24_JUNE",
-      "SLICE_STAKE_24_JUNE"
+      [web3.utils.toWei("0.8333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")],
+      [web3.utils.toWei('1000'), web3.utils.toWei('20000'), web3.utils.toWei('250000')],
+      ["120", "300", "360"], // 1 month, 6 month, 1 year
+      "SLICE STAKE_27_JUNE",
+      "SLICE_STAKE_27_JUNE"
     ], { from: tokenOwner });
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
     let VaultInstance = await Vault.at(VAULT_ADDRESS);
-    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalReward), { from: tokenOwner });
+    await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
 
   } else if (network == 'mainnet') {
     let { SLICEAddress, VAULT_ADDRESS } = process.env;
