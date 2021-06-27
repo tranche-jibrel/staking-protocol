@@ -57,7 +57,7 @@ module.exports = async (deployer, network, accounts) => {
       VAULT_ADDRESS,
       SLICEAddress,
       SLICEAddress,
-      [web3.utils.toWei("0.8333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")],
+      [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")],
       [web3.utils.toWei('1000'), web3.utils.toWei('20000'), web3.utils.toWei('250000')],
       ["120", "300", "360"], // 1 month, 6 month, 1 year
       "SLICE STAKE_27_JUNE",
@@ -81,10 +81,10 @@ module.exports = async (deployer, network, accounts) => {
       VAULT_ADDRESS,
       SLICEAddress,
       SLICEAddress,
-      web3.utils.toWei("0.8333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")
+      web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")
       //[833, 1250, 4000], // 10%, 25%, 40%
       [toWei(reward1), toWei(reward2), toWei(reward3)],
-      ["2678400", "15768000", "31536000"], // 1 month, 6 month, 1 year
+      ["150000", "312500", "500000"], // 1 month(31), 6 month(183), 1 year(365)
       "SLICE STAKE",
       "SLICE_STAKE"
     ], { from: tokenOwner });
