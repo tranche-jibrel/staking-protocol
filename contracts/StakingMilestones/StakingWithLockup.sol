@@ -26,6 +26,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
     mapping (uint8 => uint256) public rewardCapForDuration; // Total reward we want to distribute corresponding to each duration
     mapping (uint8 => uint256) public totalRewardsDistributedForDuration; // Total reward distributed corresponding to each duration
     mapping (uint8 => uint256) public totalTokensStakedInDuration; // Total tokens staked corresponding to each duration
+    mapping (uint8 => uint256) public tokensStakedInDuration; // Total tokens staked corresponding to each duration at the moment
 
     struct StakingDetails {
         uint256 startTime;
@@ -129,6 +130,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         details.durationIndex = durationIndex;
 
         totalTokensStakedInDuration[durationIndex] = totalTokensStakedInDuration[durationIndex].add(stakeAmount);
+        tokensStakedInDuration[durationIndex] = tokensStakedInDuration[durationIndex].add(stakeAmount);
 
         _mint(msg.sender, stakeAmount.add(reward));
 
@@ -157,7 +159,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
         delete stakingDetails[msg.sender][counter];
 
-        totalTokensStakedInDuration[durationIndex] = totalTokensStakedInDuration[durationIndex].sub(amount);
+        tokensStakedInDuration[durationIndex] = tokensStakedInDuration[durationIndex].sub(amount);
         totalRewardsDistributed = totalRewardsDistributed.add(reward);
 
         _burn(msg.sender, amount.add(reward));
