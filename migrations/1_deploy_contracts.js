@@ -73,9 +73,9 @@ module.exports = async (deployer, network, accounts) => {
     const tokenOwner = accounts[0];
     const toWei = web3.utils.toWei;
     console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
-    let reward1 = 1500000;
-    let reward2 = 1250000;
-    let reward3 = 1250000;
+    let reward1 = 12500;
+    let reward2 = 156250;
+    let reward3 = 500000;
     let totalRewards = reward1 + reward2 + reward3;
     let stakingLockupInstance = await deployProxy(StakingWithLockup, [
       VAULT_ADDRESS,
