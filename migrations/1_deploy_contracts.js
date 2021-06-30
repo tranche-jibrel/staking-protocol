@@ -71,7 +71,6 @@ module.exports = async (deployer, network, accounts) => {
     let { SLICEAddress, VAULT_ADDRESS } = process.env;
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
-    const toWei = web3.utils.toWei;
     console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
     let reward1 = 12500;
     let reward2 = 156250;
@@ -85,14 +84,15 @@ module.exports = async (deployer, network, accounts) => {
       SLICEAddress,
       SLICEAddress,
       [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")], // 10%, 25%, 40%
-      [toWei(reward1.toString()), toWei(reward2.toString()), toWei(reward3.toString())],
+      [web3.utils.toWei(reward1.toString()), web3.utils.toWei(reward2.toString()), web3.utils.toWei(reward3.toString())],
       [duration1.toString(), duration2.toString(), duration3.toString()], // 1 month(31), 6 month(183), 1 year(365)
-      "SLICE STAKE",
-      "SLICE_STAKE"
+      "Staked SLICE",
+      "STKDSLICE"
     ], { from: tokenOwner });
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
     let VaultInstance = await Vault.at(VAULT_ADDRESS);
-    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalRewards.toString()), { from: tokenOwner });
+    await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalRewards.toString()), { from: tokenOwner });
+    console.log('Vault allowance set');
   }
 
 };
