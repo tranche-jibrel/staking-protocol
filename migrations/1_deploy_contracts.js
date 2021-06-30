@@ -6,7 +6,7 @@ var Vault = artifacts.require('./StakingMilestones/Vault.sol');
 var mySlice = artifacts.require('./test/MySlice.sol');
 var myDai = artifacts.require('./test/MyERC20.sol');
 
-const totalReward = "1000000000";
+const totalReward = "10000";
 module.exports = async (deployer, network, accounts) => {
   if (network == "development") {
     const tokenOwner = accounts[0];
