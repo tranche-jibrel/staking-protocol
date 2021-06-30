@@ -28,7 +28,11 @@
     "@openzeppelin/test-helpers": "^0.5.10",
     "chai": "^4.2.0",
     "chai-bn": "^0.2.1",
-    "ethereum-waffle": "^3.2.2"
+    "eth-gas-reporter": "^0.2.22",
+    "ethereum-waffle": "^3.2.2",
+    "ganache-time-traveler": "^1.0.15",
+    "solidity-coverage": "^0.7.16",
+    "truffle-plugin-verify": "^0.5.8"
   },
   "repository": {
     "type": "git",
