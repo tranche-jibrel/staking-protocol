@@ -49,7 +49,7 @@ module.exports = async (deployer, network, accounts) => {
 
     await mySliceInstance.transfer(vaultInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
 
-  } else if (network == 'kovan1') {
+  } else if (network == 'kovan') {
     let { SLICEAddress, VAULT_ADDRESS, } = process.env;
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
@@ -67,7 +67,7 @@ module.exports = async (deployer, network, accounts) => {
     let VaultInstance = await Vault.at(VAULT_ADDRESS);
     await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
 
-  } else if (network == 'kovan') {
+  } else if (network == 'mainnet') {
     let { SLICEAddress, VAULT_ADDRESS } = process.env;
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
