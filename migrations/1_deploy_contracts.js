@@ -76,20 +76,23 @@ module.exports = async (deployer, network, accounts) => {
     let reward1 = 12500;
     let reward2 = 156250;
     let reward3 = 500000;
+    let duration1 = 60 * 60 * 24 * 31;
+    let duration2 = 60 * 60 * 24 * 183;
+    let duration3 = 60 * 60 * 24 * 365;
     let totalRewards = reward1 + reward2 + reward3;
     let stakingLockupInstance = await deployProxy(StakingWithLockup, [
       VAULT_ADDRESS,
       SLICEAddress,
       SLICEAddress,
-      web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4") // 10%, 25%, 40%
-      [toWei(reward1), toWei(reward2), toWei(reward3)],
-      ["150000", "312500", "500000"], // 1 month(31), 6 month(183), 1 year(365)
+      [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")], // 10%, 25%, 40%
+      [toWei(reward1.toString()), toWei(reward2.toString()), toWei(reward3.toString())],
+      [duration1.toString(), duration2.toString(), duration3.toString()], // 1 month(31), 6 month(183), 1 year(365)
       "SLICE STAKE",
       "SLICE_STAKE"
     ], { from: tokenOwner });
     console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
     let VaultInstance = await Vault.at(VAULT_ADDRESS);
-    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalRewards), { from: tokenOwner });
+    await VaultInstance.setAllowance(stakingLockupInstance.address, toWei(totalRewards.toString()), { from: tokenOwner });
   }
 
 };
