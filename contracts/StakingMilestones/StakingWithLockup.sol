@@ -8,7 +8,8 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 
 
 contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSafe {
-     // lib
+
+    // lib
     using SafeMath for uint;
 
     // addreses
@@ -22,7 +23,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
     uint8 public numDurations;
 
-    mapping (uint8 => uint256) public percentageRewards; // Percentage yield corresponding to all reward durations (scaled by 1e18, 1e16 = 1%, 1e18 = 100%)
+    mapping (uint8 => uint256) public percentageRewards; // Percentage yield corresponding to all reward durations. 1e16 = 1%, 1e18 = 100%
     mapping (uint8 => uint256) public rewardCapForDuration; // Total reward we want to distribute corresponding to each duration
     mapping (uint8 => uint256) public totalRewardsDistributedForDuration; // Total reward distributed corresponding to each duration
     mapping (uint8 => uint256) public totalTokensStakedInDuration; // Total tokens staked corresponding to each duration
@@ -50,14 +51,17 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
     event RewardDurationsSet(uint256[] _durations);
 
     // constructor
-    function initialize(address vault,
-            address slice,
-            address stakableToken,
-            uint256[] calldata rewardsForDuration,
-            uint256[] calldata rewardCapsForDuration,
-            uint256[] calldata rewardDurations,
-            string memory name,
-            string memory symbol) external initializer {
+    function initialize(
+        address vault,
+        address slice,
+        address stakableToken,
+        uint256[] calldata rewardsForDuration,
+        uint256[] calldata rewardCapsForDuration,
+        uint256[] calldata rewardDurations,
+        string memory name,
+        string memory symbol
+    ) external initializer {
+
         OwnableUpgradeSafe.__Ownable_init();
         ERC20NonTransferrableUpgradeSafe.__ERC20_init(name, symbol);
         
@@ -79,11 +83,18 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         emit RewardDurationsSet(rewardDurations);
         emit RewardsSet(rewardsForDuration);
         emit RewardCapsSet(rewardCapsForDuration);
+
     }
 
-    function setRewardDetails(uint256[] calldata rewardsForDuration,
+    function setRewardDetails
+        (
+            uint256[] calldata rewardsForDuration,
             uint256[] calldata rewardCapsForDuration,
-            uint256[] calldata rewardDurations) external onlyOwner {
+            uint256[] calldata rewardDurations
+        )
+            external
+            onlyOwner
+        {
 
         require(rewardDurations.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
         require(rewardsForDuration.length == rewardCapsForDuration.length, "StakingWithLockup: Array lengths should be equal");
@@ -99,6 +110,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         emit RewardDurationsSet(rewardDurations);
         emit RewardCapsSet(rewardCapsForDuration);
         emit RewardsSet(rewardsForDuration);
+
     }
 
     function stake(uint256 amount, uint8 durationIndex) external {
@@ -109,14 +121,20 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
                 "StakingWithLockup: Rewards allocated for this duration have been distributed");
 
         uint256 stakeAmount = amount;
-        uint256 reward = stakeAmount.mul(percentageRewards[durationIndex]).div(1e18); 
+        uint256 reward = stakeAmount.mul(percentageRewards[durationIndex]).div(1e18); // 1e18 = 100%
 
         if (totalRewardsDistributedForDuration[durationIndex].add(reward) > rewardCapForDuration[durationIndex]) {
+            
             reward = rewardCapForDuration[durationIndex].sub(totalRewardsDistributedForDuration[durationIndex]);
+            
             stakeAmount = reward.mul(1e18).div(percentageRewards[durationIndex]);
+
             totalRewardsDistributedForDuration[durationIndex] = rewardCapForDuration[durationIndex];
+        
         } else {
+
             totalRewardsDistributedForDuration[durationIndex] = totalRewardsDistributedForDuration[durationIndex].add(reward);
+        
         }
 
         stakeCounter[msg.sender] = stakeCounter[msg.sender].add(1);
@@ -137,6 +155,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         SafeERC20.safeTransferFrom(_stakableToken, msg.sender, address(this), stakeAmount);
 
         emit Staked(msg.sender, stakeAmount, block.timestamp, details.endTime, stakeCounter[msg.sender], stakeAmount.add(reward));
+
     }
 
     function claim(uint256 counter) external {

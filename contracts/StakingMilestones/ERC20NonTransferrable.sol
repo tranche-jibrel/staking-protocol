@@ -53,7 +53,7 @@ contract ERC20NonTransferrableUpgradeSafe is Initializable, ContextUpgradeSafe {
     /**
      * @dev Returns the name of the token.
      */
-    function name() public view returns (string memory) {
+    function name() external view returns (string memory) {
         return _name;
     }
 
@@ -61,7 +61,7 @@ contract ERC20NonTransferrableUpgradeSafe is Initializable, ContextUpgradeSafe {
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() public view returns (string memory) {
+    function symbol() external view returns (string memory) {
         return _symbol;
     }
 
@@ -78,21 +78,21 @@ contract ERC20NonTransferrableUpgradeSafe is Initializable, ContextUpgradeSafe {
      * no way affects any of the arithmetic of the contract, including
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
-    function decimals() public view returns (uint8) {
+    function decimals() external view returns (uint8) {
         return _decimals;
     }
 
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public view returns (uint256) {
+    function balanceOf(address account) external view returns (uint256) {
         return _balances[account];
     }
 
@@ -267,17 +267,6 @@ contract ERC20NonTransferrableUpgradeSafe is Initializable, ContextUpgradeSafe {
     //     _allowances[owner][spender] = amount;
     //     emit Approval(owner, spender, amount);
     // }
-
-    /**
-     * @dev Sets {decimals} to a value other than the default one of 18.
-     *
-     * WARNING: This function should only be called from the constructor. Most
-     * applications that interact with token contracts will not expect
-     * {decimals} to ever change, and may work incorrectly if it does.
-     */
-    function _setupDecimals(uint8 decimals_) internal {
-        _decimals = decimals_;
-    }
 
     /**
      * @dev Hook that is called before any transfer of tokens. This includes
