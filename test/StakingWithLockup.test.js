@@ -458,6 +458,89 @@ contract("StakingWithLockup", function (accounts) {
 
   });
 
+  describe("repeal()", function () {
+    beforeEach(async function () {
+      await daiContract.transfer(user1, web3.utils.toWei("100"), { from: owner });
+      await daiContract.transfer(user2, web3.utils.toWei("100"), { from: owner });
+      await daiContract.transfer(user3, web3.utils.toWei("100"), { from: owner });
+
+      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user1 });
+      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user2 });
+      await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user3 });
+    });
+
+    it("Should repeal", async function () {
+     const balanceBefore = await daiContract.balanceOf(stkLckpContract.address);
+     
+     await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user1 });
+     await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user2 });
+
+     var balance = await daiContract.balanceOf(stkLckpContract.address);
+     expect((balance - balanceBefore).toString()).to.be.bignumber.equal(web3.utils.toWei("2"));
+
+     await stkLckpContract.repeal(4, { from: owner });
+
+     balance = await daiContract.balanceOf(stkLckpContract.address);
+     expect(balance).to.be.bignumber.equal(balanceBefore.toString());
+
+     var result = await stkLckpContract.isRepealed(4);
+
+     expect(result).to.equal(true);
+    });
+
+    it("Should not mass claim for user2 if duration is repealed", async function () {
+      await stkLckpContract.stake(web3.utils.toWei("1"), 2, { from: user2 });
+      await stkLckpContract.stake(web3.utils.toWei("1"), 3, { from: user2 });
+      await stkLckpContract.stake(web3.utils.toWei("1"), 2, { from: user2 });
+
+      await stkLckpContract.repeal(3, { from: owner });
+
+      await expectRevert(
+        stkLckpContract.massClaim([15, 14, 16], { from: user2 }),
+        "StakingWithLockup: This duration has been repealed!"
+      );
+
+      var result = await stkLckpContract.isRepealed(3);
+
+      expect(result).to.equal(true);
+    });
+
+    it("Should not claim for user2 if duration is repealed", async function () {
+      await stkLckpContract.stake(web3.utils.toWei("1"), 2, { from: user2 });
+
+      await stkLckpContract.repeal(2, { from: owner });
+
+      await expectRevert(
+        stkLckpContract.claim(17, { from: user2 }),
+        "StakingWithLockup: This duration has been repealed!"
+      );
+
+      var result = await stkLckpContract.isRepealed(2);
+
+      expect(result).to.equal(true);
+    });
+
+    it("Should not repeal if duration index is invalid", async function () {
+      await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user1 });
+      await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user2 }); 
+
+      await expectRevert(
+        stkLckpContract.repeal(5, { from: owner }),
+        "StakingWithLockup: Invalid duration index"
+      );
+    });
+
+    it("Should not repeal if not called by the owner", async function () {
+      await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user1 });
+      await stkLckpContract.stake(web3.utils.toWei("1"), 4, { from: user2 }); 
+
+      await expectRevert(
+        stkLckpContract.repeal(4, { from: user1 }),
+        "Ownable: caller is not the owner"
+      );
+    });
+  });
+
   describe("setRewardDetails()", function () {
     it("Should set details", async function () {
       await stkLckpContract.setRewardDetails(
