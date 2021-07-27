@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { deployProxy } = require('@openzeppelin/truffle-upgrades');
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
 var StakingWithLockup = artifacts.require('./StakingMilestones/StakingWithLockup.sol');
 var Vault = artifacts.require('./StakingMilestones/Vault.sol');
@@ -50,49 +50,62 @@ module.exports = async (deployer, network, accounts) => {
     await mySliceInstance.transfer(vaultInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
 
   } else if (network == 'kovan') {
-    let { SLICEAddress, VAULT_ADDRESS, } = process.env;
+    let { SLICEAddress, VAULT_ADDRESS, IS_UPGRADE, STAKING_LOCKUP_CONTRACT } = process.env;
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
-    let stakingLockupInstance = await deployProxy(StakingWithLockup, [
-      VAULT_ADDRESS,
-      SLICEAddress,
-      SLICEAddress,
-      [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")],
-      [web3.utils.toWei('1000'), web3.utils.toWei('20000'), web3.utils.toWei('250000')],
-      ["120", "300", "360"], // 1 month, 6 month, 1 year
-      "SLICE STAKE_27_JUNE",
-      "SLICE_STAKE_27_JUNE"
-    ], { from: tokenOwner });
-    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
-    let VaultInstance = await Vault.at(VAULT_ADDRESS);
-    await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
-
+    console.log(IS_UPGRADE, STAKING_LOCKUP_CONTRACT)
+    if (IS_UPGRADE == 'true') {
+      console.log('control in upgrade')
+      await upgradeProxy(STAKING_LOCKUP_CONTRACT, StakingWithLockup, { from: tokenOwner });
+      console.log('contract upgraded successfully')
+    } else {
+      let stakingLockupInstance = await deployProxy(StakingWithLockup, [
+        VAULT_ADDRESS,
+        SLICEAddress,
+        SLICEAddress,
+        [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")],
+        [web3.utils.toWei('1000'), web3.utils.toWei('20000'), web3.utils.toWei('250000')],
+        ["120", "300", "360"], // 1 month, 6 month, 1 year
+        "SLICE STAKE_27_JUNE",
+        "SLICE_STAKE_27_JUNE"
+      ], { from: tokenOwner });
+      console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
+      let VaultInstance = await Vault.at(VAULT_ADDRESS);
+      await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalReward), { from: tokenOwner });
+    }
   } else if (network == 'mainnet') {
-    let { SLICEAddress, VAULT_ADDRESS } = process.env;
+    let { SLICEAddress, VAULT_ADDRESS, IS_UPGRADE, STAKING_LOCKUP_CONTRACT } = process.env;
+    console.log(IS_UPGRADE, STAKING_LOCKUP_CONTRACT)
     const accounts = await web3.eth.getAccounts();
     const tokenOwner = accounts[0];
-    console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
-    let reward1 = 12500;
-    let reward2 = 156250;
-    let reward3 = 500000;
-    let duration1 = 60 * 60 * 24 * 31;
-    let duration2 = 60 * 60 * 24 * 183;
-    let duration3 = 60 * 60 * 24 * 365;
-    let totalRewards = reward1 + reward2 + reward3;
-    let stakingLockupInstance = await deployProxy(StakingWithLockup, [
-      VAULT_ADDRESS,
-      SLICEAddress,
-      SLICEAddress,
-      [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")], // 10%, 25%, 40%
-      [web3.utils.toWei(reward1.toString()), web3.utils.toWei(reward2.toString()), web3.utils.toWei(reward3.toString())],
-      [duration1.toString(), duration2.toString(), duration3.toString()], // 1 month(31), 6 month(183), 1 year(365)
-      "Staked SLICE",
-      "STKDSLICE"
-    ], { from: tokenOwner });
-    console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
-    let VaultInstance = await Vault.at(VAULT_ADDRESS);
-    await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalRewards.toString()), { from: tokenOwner });
-    console.log('Vault allowance set');
+    if (IS_UPGRADE == 'true') {
+      console.log('control in upgrade')
+      await upgradeProxy(STAKING_LOCKUP_CONTRACT, StakingWithLockup, { from: tokenOwner });
+      console.log('contract upgraded successfully')
+    } else {
+      console.log('control in deploying staking lockup', SLICEAddress, VAULT_ADDRESS);
+      let reward1 = 12500;
+      let reward2 = 156250;
+      let reward3 = 500000;
+      let duration1 = 60 * 60 * 24 * 31;
+      let duration2 = 60 * 60 * 24 * 183;
+      let duration3 = 60 * 60 * 24 * 365;
+      let totalRewards = reward1 + reward2 + reward3;
+      let stakingLockupInstance = await deployProxy(StakingWithLockup, [
+        VAULT_ADDRESS,
+        SLICEAddress,
+        SLICEAddress,
+        [web3.utils.toWei("0.008333"), web3.utils.toWei("0.1250"), web3.utils.toWei("0.4")], // 10%, 25%, 40%
+        [web3.utils.toWei(reward1.toString()), web3.utils.toWei(reward2.toString()), web3.utils.toWei(reward3.toString())],
+        [duration1.toString(), duration2.toString(), duration3.toString()], // 1 month(31), 6 month(183), 1 year(365)
+        "Staked SLICE",
+        "STKDSLICE"
+      ], { from: tokenOwner });
+      console.log('STAKING_LOCKUP_CONTRACT=' + stakingLockupInstance.address);
+      let VaultInstance = await Vault.at(VAULT_ADDRESS);
+      await VaultInstance.setAllowance(stakingLockupInstance.address, web3.utils.toWei(totalRewards.toString()), { from: tokenOwner });
+      console.log('Vault allowance set');
+    }
   }
 
 };
