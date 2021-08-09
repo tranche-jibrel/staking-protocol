@@ -43,12 +43,15 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
     // Total SLICE distributed as rewards
     uint256 public totalRewardsDistributed;
 
+    mapping (uint8 => bool) public isRepealed; // The rewards for a particular duration index have been repealed or not 
+
     // events
     event Staked(address indexed user, uint256 amount, uint256 startTime, uint256 endTime, uint256 counter, uint256 tokensMinted);
     event Claimed(address indexed user, uint256 amount, uint256 reward, uint256 tokensBurned, uint256 counter);
     event RewardsSet(uint256[] rewards);
     event RewardCapsSet(uint256[] caps);
     event RewardDurationsSet(uint256[] _durations);
+    event Repealed(uint8 durationIndex, uint256 amount);
 
     // constructor
     function initialize(
@@ -170,6 +173,7 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
 
     function _claim(uint256 counter) internal {
         require(stakingDetails[msg.sender][counter].amount > 0, "StakingWithLockup: Stake does not exist");
+        require(!isRepealed[stakingDetails[msg.sender][counter].durationIndex], "StakingWithLockup: This duration has been repealed!");
         require(block.timestamp >= stakingDetails[msg.sender][counter].endTime, "StakingWithLockup: Cannot claim reward before endTime");
 
         uint256 reward = stakingDetails[msg.sender][counter].reward;
@@ -187,6 +191,18 @@ contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSa
         SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, reward);
         
         emit Claimed(msg.sender, amount, reward, amount.add(reward), counter);
+    }
+
+    function repeal(uint8 durationIndex) external onlyOwner {
+        require(durationIndex < numDurations, "StakingWithLockup: Invalid duration index");
+
+        isRepealed[durationIndex] = true;
+
+        uint256 amount = tokensStakedInDuration[durationIndex];
+
+        SafeERC20.safeTransfer(_stakableToken, msg.sender, amount);
+
+        emit Repealed(durationIndex, amount);
     }
 
 }
