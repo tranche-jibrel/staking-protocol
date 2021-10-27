@@ -247,6 +247,24 @@ contract("StakingWithLockup", function (accounts) {
       await daiContract.approve(stkLckpContract.address, web3.utils.toWei("100"), { from: user3 });
     });
 
+    it("Should add a new staking pool", async function () {
+      await stkLckpContract.setRewardDetails(
+        [web3.utils.toWei("0.1"), web3.utils.toWei("0.2"), web3.utils.toWei("0.3"), web3.utils.toWei("0.4"), web3.utils.toWei("0.5"), web3.utils.toWei("0.6")],
+        [
+          web3.utils.toWei("10"),
+          web3.utils.toWei("20"),
+          web3.utils.toWei("30"),
+          web3.utils.toWei("40"),
+          web3.utils.toWei("50"),
+          web3.utils.toWei("60")
+        ],
+        [20, 40, 60, 80, 100, 120],
+        {
+          from: owner
+        }
+      );
+    })
+
     it("Should claim for user1", async function () {
       const maturity = Number(time.duration.seconds(20));
       
