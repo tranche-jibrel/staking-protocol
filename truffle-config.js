@@ -20,7 +20,20 @@ module.exports = {
       // confirmations: 2,
       timeoutBlocks: 200,
       skipDryRun: true
-    }
+    },
+    mainnet: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.mnemonic,
+          `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`
+        ),
+      network_id: 1,
+      gas: 5500000,
+      gasPrice: 161000000000,
+      timeoutBlocks: 200,
+      confirmations: 2,
+      skipDryRun: true
+    },
   },
   plugins: ['truffle-contract-size', 
     'solidity-coverage',
@@ -45,5 +58,8 @@ module.exports = {
         //  evmVersion: "byzantium"
       }
     }
+  },
+  api_keys: {
+    etherscan: `${process.env.ETHERSCAN_KEY}`,
   }
 };
