@@ -33,7 +33,7 @@
     "ethereum-waffle": "^3.2.2",
     "ganache-time-traveler": "^1.0.15",
     "solidity-coverage": "^0.7.16",
-    "truffle-plugin-verify": "^0.5.8"
+    "truffle-plugin-verify": "^0.5.20"
   },
   "repository": {
     "type": "git",

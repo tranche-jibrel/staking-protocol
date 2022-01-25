@@ -4,6 +4,7 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
@@ -11,7 +12,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 
 contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     using SafeMath for uint256;
-    using SafeMath for uint128;
+    using SafeCast for uint256;
 
 
     uint128 constant private BASE_MULTIPLIER = uint128(1e18);
@@ -84,7 +85,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         }
 
         // update the next epoch pool size
-        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch.add(1)];
+        Pool storage pNextEpoch = poolSize[tokenAddress][uint256(currentEpoch).add(1)];
         pNextEpoch.size = token.balanceOf(address(this));
         pNextEpoch.set = true;
 
@@ -100,7 +101,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
             checkpoints.push(Checkpoint(currentEpoch, currentMultiplier, 0, amount));
 
             // next epoch => multiplier is 1, epoch deposits is 0
-            checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, amount, 0));
+            checkpoints.push(Checkpoint((uint256(currentEpoch).add(1)).toUint128(), BASE_MULTIPLIER, amount, 0));
         } else {
             uint256 last = checkpoints.length.sub(1);
 
@@ -113,7 +114,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
                     currentMultiplier
                 );
                 checkpoints.push(Checkpoint(currentEpoch, multiplier, getCheckpointBalance(checkpoints[last]), amount));
-                checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint((uint256(currentEpoch).add(1)).toUint128(), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
             }
             // the last action happened in the previous epoch
             else if (checkpoints[last].epochId == currentEpoch) {
@@ -125,7 +126,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
                 );
                 checkpoints[last].newDeposits = checkpoints[last].newDeposits.add(amount);
 
-                checkpoints.push(Checkpoint(uint128(currentEpoch.add(1)), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
+                checkpoints.push(Checkpoint((uint256(currentEpoch).add(1)).toUint128(), BASE_MULTIPLIER, balances[msg.sender][tokenAddress], 0));
             }
             // the last action happened in the current epoch
             else {
@@ -173,7 +174,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
         }
 
         // update the pool size of the next epoch to its current balance
-        Pool storage pNextEpoch = poolSize[tokenAddress][currentEpoch.add(1)];
+        Pool storage pNextEpoch = poolSize[tokenAddress][uint256(currentEpoch).add(1)];
         pNextEpoch.size = token.balanceOf(address(this));
         pNextEpoch.set = true;
 
@@ -244,7 +245,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     function manualEpochInit(address[] memory tokens, uint128 epochId) public {
         require(epochId <= getCurrentEpoch(), "can't init a future epoch");
 
-        for (uint i = 0; i < tokens.length; i++) {
+        for (uint256 i = 0; i < tokens.length; i++) {
             Pool storage p = poolSize[tokens[i]][epochId];
 
             if (epochId == 0) {
@@ -252,9 +253,9 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
                 p.set = true;
             } else {
                 require(!epochIsInitialized(tokens[i], epochId), "Staking: epoch already initialized");
-                require(epochIsInitialized(tokens[i], uint128(epochId.sub(1))), "Staking: previous epoch not initialized");
+                require(epochIsInitialized(tokens[i], (uint256(epochId).sub(1)).toUint128()), "Staking: previous epoch not initialized");
 
-                p.size = poolSize[tokens[i]][epochId.sub(1)].size;
+                p.size = poolSize[tokens[i]][uint256(epochId).sub(1)].size;
                 p.set = true;
             }
         }
@@ -263,7 +264,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
     }
 
     function emergencyWithdraw(address tokenAddress) external nonReentrant {
-        require(getCurrentEpoch().sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
+        require(uint256(getCurrentEpoch()).sub(lastWithdrawEpochId[tokenAddress]) >= 10, "At least 10 epochs must pass without success");
 
         uint256 totalUserBalance = balances[msg.sender][tokenAddress];
         require(totalUserBalance > 0, "Amount must be > 0");
@@ -289,8 +290,8 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
             return 0;
         }
 
-        uint min = 0;
-        uint max = checkpoints.length.sub(1);
+        uint256 min = 0;
+        uint256 max = checkpoints.length.sub(1);
 
         // shortcut for blocks newer than the latest checkpoint == current balance
         if (epochId >= checkpoints[max].epochId) {
@@ -299,7 +300,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
 
         // binary search of the value in the array
         while (max > min) {
-            uint mid = (max.add(min).add(1)).div(2);
+            uint256 mid = (max.add(min).add(1)).div(2);
             if (checkpoints[mid].epochId <= epochId) {
                 min = mid;
             } else {
@@ -355,7 +356,7 @@ contract StakingMilestones is ReentrancyGuardUpgradeSafe, OwnableUpgradeSafe {
      */
     function currentEpochMultiplier() public view returns (uint128) {
         uint128 currentEpoch = getCurrentEpoch();
-        uint256 currentEpochEnd = epoch1Start.add(currentEpoch.mul(epochDuration));
+        uint256 currentEpochEnd = epoch1Start.add(uint256(currentEpoch).mul(epochDuration));
         uint256 timeLeft = currentEpochEnd.sub(block.timestamp);
         uint128 multiplier = uint128(timeLeft.mul(BASE_MULTIPLIER).div(epochDuration));
 

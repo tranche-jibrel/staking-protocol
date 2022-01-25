@@ -3,6 +3,7 @@
 pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
@@ -10,50 +11,46 @@ import "./IStakingMilestones.sol";
 
 
 contract YieldFarmLP is OwnableUpgradeSafe {
+    using SafeMath for uint256;
+    using SafeCast for uint256;
 
-    // lib
-    using SafeMath for uint;
-    using SafeMath for uint128;
-
-    // addreses
-    // contracts
     address public _vault;
     IERC20 public _slice;
     IStakingMilestones public _staking;
 
     // Stakable token details
-    mapping (address => uint) public weightOfStakableToken;
+    mapping (address => uint256) public weightOfStakableToken;
     uint128 public noOfStakableTokens;
     mapping (uint128 => address) public stakableToken;
 
     // Store total pool size of each epoch
-    mapping (uint128 => uint) private epochs;
+    mapping (uint128 => uint256) private epochs;
     // Total amount of SLICE tokens to be distributed in that epoch
-    mapping (uint128 => uint) public totalRewardInEpoch;
+    mapping (uint128 => uint256) public totalRewardInEpoch;
     // Total SLICE distributed since epochStart
-    uint public totalRewardsDistributed;
+    uint256 public totalRewardsDistributed;
 
     // id of last init epoch, for optimization purposes moved from struct to a single id.
     uint128 public lastInitializedEpoch;
 
     // state of user harvest epoch
     mapping(address => uint128) private lastEpochIdHarvested;
-    uint public epochDuration; // init from staking contract
-    uint public epochStart; // init from staking contract
+    uint256 public epochDuration; // init from staking contract
+    uint256 public epochStart; // init from staking contract
 
     // events
     event MassHarvest(address indexed user, uint256 epochsHarvested, uint256 totalValue);
     event Harvest(address indexed user, uint128 indexed epochId, uint256 amount);
     event StakableTokenAdded(address indexed newTokenAddress, uint256 weight);
     event StakableTokenRemoved(address indexed tokenAddress);
-    event TotalRewardInEpochUpdated(uint128 epochId, uint totalReward);
+    event TotalRewardInEpochUpdated(uint128 epochId, uint256 totalReward);
 
     // constructor
     function initialize(
         address sliceAddress,
         address stakeContract,
         address vault,
-        uint _totalRewardInEpoch
+        uint256 _totalRewardInEpoch
     ) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         _slice = IERC20(sliceAddress);
@@ -69,10 +66,10 @@ contract YieldFarmLP is OwnableUpgradeSafe {
      * @param _tokenAddress contract token address
      * @param _weight weight of the token in percent for calculating rewards
      */
-    function addStakableToken(address _tokenAddress, uint _weight) external onlyOwner {
+    function addStakableToken(address _tokenAddress, uint256 _weight) external onlyOwner {
         require(weightOfStakableToken[_tokenAddress] == 0, "YieldFarm: Token already added");
 
-        noOfStakableTokens = uint128(noOfStakableTokens.add(1));
+        noOfStakableTokens = (uint256(noOfStakableTokens).add(1)).toUint128();
         weightOfStakableToken[_tokenAddress] = _weight;
         stakableToken[noOfStakableTokens] = _tokenAddress;
         
@@ -89,25 +86,20 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         delete weightOfStakableToken[_tokenAddress];
 
         uint128 i;
-
         for (i = 1; i <= noOfStakableTokens; i++) {
-            if (stakableToken[i] == _tokenAddress) break;
-        }
-
-        for (uint128 j = i; j <= noOfStakableTokens; j++) {
-            if (j != noOfStakableTokens) {
-                stakableToken[j] = stakableToken[uint128(j.add(1))];
-            } else {
-                stakableToken[j] = address(0);
+            if (stakableToken[i] == _tokenAddress) {
+                stakableToken[i] = stakableToken[noOfStakableTokens];
+                stakableToken[noOfStakableTokens] = address(0); 
+                break;
             }
         }
 
-        noOfStakableTokens = uint128(noOfStakableTokens.sub(1));
+        noOfStakableTokens = (uint256(noOfStakableTokens).sub(1).toUint128());
         
         emit StakableTokenRemoved(_tokenAddress);
     }
 
-    function setTotalRewardInParticularEpoch(uint128 epochId, uint _totalRewardInEpoch) external onlyOwner {
+    function setTotalRewardInParticularEpoch(uint128 epochId, uint256 _totalRewardInEpoch) external onlyOwner {
         require(epochId > _getEpochId(), "YieldFarm: Epoch ID should be greater than the current epoch ID");
         
         totalRewardInEpoch[epochId] = _totalRewardInEpoch;
@@ -117,17 +109,18 @@ contract YieldFarmLP is OwnableUpgradeSafe {
 
     // public methods
     // public method to harvest all the unharvested epochs until current epoch - 1
-    function massHarvest() external returns (uint){
-        uint totalDistributedValue;
-        uint epochId = _getEpochId().sub(1); // fails in epoch 0
+    function massHarvest() external returns (uint256){
+        uint256 totalDistributedValue;
+        uint256 epochId = uint256(_getEpochId()).sub(1); // fails in epoch 0
 
-        for (uint128 i = uint128(lastEpochIdHarvested[msg.sender].add(1)); i <= epochId; i++) {
+        uint256 i;
+        for (i = uint256(lastEpochIdHarvested[msg.sender]).add(1); i <= uint256(epochId); i++) {
             // i = epochId
             // compute distributed Value and do one single transfer at the end
-            totalDistributedValue = totalDistributedValue.add(_harvest(i));
+            totalDistributedValue = totalDistributedValue.add(_harvest(i.toUint128()));
         }
 
-        emit MassHarvest(msg.sender, epochId.sub(lastEpochIdHarvested[msg.sender]), totalDistributedValue);
+        emit MassHarvest(msg.sender, i.toUint128(), totalDistributedValue);
 
         if (totalDistributedValue > 0) {
             SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, totalDistributedValue);
@@ -136,11 +129,11 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         return totalDistributedValue;
     }
 
-    function harvest (uint128 epochId) external returns (uint){
+    function harvest (uint128 epochId) external returns (uint256){
         // checks for requested epoch
         require (_getEpochId() > epochId, "This epoch is in the future");
-        require (lastEpochIdHarvested[msg.sender].add(1) == epochId, "Harvest in order");
-        uint userReward = _harvest(epochId);
+        require (uint256(lastEpochIdHarvested[msg.sender]).add(1) == uint256(epochId), "Harvest in order");
+        uint256 userReward = _harvest(epochId);
         if (userReward > 0) {
             SafeERC20.safeTransferFrom(_slice, _vault, msg.sender, userReward);
         }
@@ -150,25 +143,25 @@ contract YieldFarmLP is OwnableUpgradeSafe {
 
     // views
     // calls to the staking smart contract to retrieve the epoch total pool size
-    function getPoolSize(uint128 epochId) external view returns (uint) {
+    function getPoolSize(uint128 epochId) external view returns (uint256) {
         return _getPoolSize(epochId);
     }
 
-    function getCurrentEpoch() external view returns (uint) {
+    function getCurrentEpoch() external view returns (uint256) {
         return _getEpochId();
     }
 
     // calls to the staking smart contract to retrieve user balance for an epoch
-    function getEpochStake(address userAddress, uint128 epochId) external view returns (uint) {
+    function getEpochStake(address userAddress, uint128 epochId) external view returns (uint256) {
         return _getUserBalancePerEpoch(userAddress, epochId);
     }
 
-    function userLastEpochIdHarvested() external view returns (uint){
+    function userLastEpochIdHarvested() external view returns (uint256){
         return lastEpochIdHarvested[msg.sender];
     }
 
-    function getTotalAccruedRewards(address user) external view returns (uint rewards) {
-        uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+    function getTotalAccruedRewards(address user) external view returns (uint256 rewards) {
+        uint128 firstRewardableEpoch = (uint256(lastEpochIdHarvested[user]).add(1)).toUint128();
         uint128 currentEpoch = _getEpochId();
 
         if (firstRewardableEpoch == currentEpoch) return 0;
@@ -180,8 +173,8 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         }
     }
 
-    function getTotalAccruedRewardsForToken(address user, address token) external view returns (uint rewards) {
-        uint128 firstRewardableEpoch = uint128(lastEpochIdHarvested[user].add(1));
+    function getTotalAccruedRewardsForToken(address user, address token) external view returns (uint256 rewards) {
+        uint128 firstRewardableEpoch = (uint256(lastEpochIdHarvested[user]).add(1)).toUint128();
         uint128 currentEpoch = _getEpochId();
 
         if (firstRewardableEpoch == currentEpoch) return 0;
@@ -201,17 +194,17 @@ contract YieldFarmLP is OwnableUpgradeSafe {
     // internal methods
 
     function _initEpoch(uint128 epochId) internal {
-        require(lastInitializedEpoch.add(1) == epochId, "Epoch can be init only in order");
+        require(uint256(lastInitializedEpoch).add(1) == uint256(epochId), "Epoch can be init only in order");
         lastInitializedEpoch = epochId;
 
         if ( totalRewardInEpoch[epochId] == 0) {
-            totalRewardInEpoch[epochId] = totalRewardInEpoch[uint128(epochId.sub(1))];
+            totalRewardInEpoch[epochId] = totalRewardInEpoch[(uint256(epochId).sub(1)).toUint128()];
         }
         // call the staking smart contract to init the epoch
         epochs[epochId] = _getPoolSize(epochId);
     }
 
-    function _harvest (uint128 epochId) internal returns (uint) {
+    function _harvest (uint128 epochId) internal returns (uint256) {
         // try to initialize an epoch. if it can't it fails
         // if it fails either user either a BarnBridge account will init not init epochs
         if (lastInitializedEpoch < epochId) {
@@ -226,7 +219,7 @@ contract YieldFarmLP is OwnableUpgradeSafe {
             return 0;
         }
 
-        uint reward = totalRewardInEpoch[epochId]
+        uint256 reward = totalRewardInEpoch[epochId]
             .mul(_getUserBalancePerEpoch(msg.sender, epochId))
             .div(epochs[epochId]);
 
@@ -235,9 +228,9 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         return reward;
     }
 
-    function _getPoolSize(uint128 epochId) internal view returns (uint) {
+    function _getPoolSize(uint128 epochId) internal view returns (uint256) {
         // retrieve normalised stable coins total staked in epoch
-        uint size;
+        uint256 size;
         address token;
         for (uint128 i = 1; i <= noOfStakableTokens; i++) {
             token = stakableToken[i];
@@ -247,9 +240,9 @@ contract YieldFarmLP is OwnableUpgradeSafe {
         return size;
     }
 
-    function _getUserBalancePerEpoch(address userAddress, uint128 epochId) internal view returns (uint){
+    function _getUserBalancePerEpoch(address userAddress, uint128 epochId) internal view returns (uint256){
         // retrieve normalised stable coins total staked per user in epoch
-        uint balance;
+        uint256 balance;
         address token;
         for (uint128 i = 1; i <= noOfStakableTokens; i++) {
             token = stakableToken[i];

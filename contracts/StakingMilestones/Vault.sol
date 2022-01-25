@@ -11,7 +11,12 @@ contract Vault is OwnableUpgradeSafe {
 
     IERC20 public SLICE;
 
-    constructor (address sliceAddress) public {
+/*    constructor (address sliceAddress) public {
+        OwnableUpgradeSafe.__Ownable_init();
+        SLICE = IERC20(sliceAddress);
+    }
+*/
+    function initialize (address sliceAddress) external initializer {
         OwnableUpgradeSafe.__Ownable_init();
         SLICE = IERC20(sliceAddress);
     }

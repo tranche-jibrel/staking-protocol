@@ -284,5 +284,5 @@ contract ERC20NonTransferrableUpgradeSafe is Initializable, ContextUpgradeSafe {
      */
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
 
-    uint256[44] private __gap;
+    uint256[45] private __gap;
 }

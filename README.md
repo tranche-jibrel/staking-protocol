@@ -115,7 +115,7 @@ Users can now call deposit() and massHarvest() functions in the StakingMilestone
     <tbody>
         <tr>
             <td>StakingMilestones</td>
-            <td><code>11.13 KiB</code></td>
+            <td><code>11.25 KiB</code></td>
             <td>Used to store all the tokens(LP) staked by the users</td>
         </tr>
         <tr>
@@ -125,13 +125,18 @@ Users can now call deposit() and massHarvest() functions in the StakingMilestone
         </tr>
         <tr>
             <td>Vault</td>
-            <td><code>2.46 KiB</code></td>
+            <td><code>2.70 KiB</code></td>
             <td>Contract from where all SLICE rewards are distributed</td>
+        </tr>
+        <tr>
+            <td>YieldFarm</td>
+            <td><code>6.12 KiB</code></td>
+            <td>Contract where user SLICE rewards are calculated based on: a) number of tokens staked, and b) staking duration (single token)</td>
         </tr>
         <tr>
             <td>YieldFarmLP</td>
             <td><code>7.67 KiB</code></td>
-            <td>Contract where user SLICE rewards are calculated based on the number of tokens staked and staking duration</td>
+            <td>Contract where user SLICE rewards are calculated based on: a) number of tokens staked, and b) staking duration (LP token)</td>
         </tr>
     </tbody>
   </table>

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 contract StakingWithLockup is OwnableUpgradeSafe, ERC20NonTransferrableUpgradeSafe {
 
     // lib
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     // addreses
     // contracts
